@@ -12,4 +12,6 @@ public interface Version {
     String getStringVersion();
 
     String getFullStringVersion();
+
+    boolean isHigherOrEqualThan(Version version);
 }
