@@ -11,5 +11,9 @@ public interface ManifestBuilder {
 
     void setResolution(Dimension size);
 
+    void setFontSize(int fontSize);
+
+    void setFontName(String fontName);
+
     Manifest build();
 }

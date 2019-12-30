@@ -1,5 +1,6 @@
 package com.drartgames.stepper.display;
 
+import com.drartgames.stepper.Manifest;
 import com.drartgames.stepper.initializer.Initializer;
 import com.drartgames.stepper.utils.Work;
 import com.drartgames.stepper.initializer.DefaultStepperInitializer;
@@ -64,6 +65,9 @@ public class DefaultDisplay implements JFrameDisplay {
     private JPanel renderPanel;
 
     private Dimension renderResolution;
+    private BufferedImage renderBuffer;
+
+    private Font renderFont;
 
     public DefaultDisplay(String title, Initializer initializer) {
         images = new ArrayList<>();
@@ -81,6 +85,7 @@ public class DefaultDisplay implements JFrameDisplay {
         activeScrollableText = null;
 
         frame = new JFrame(title);
+
         this.initializer = initializer;
     }
 
@@ -161,17 +166,26 @@ public class DefaultDisplay implements JFrameDisplay {
         frame.setUndecorated(true);
 
         Toolkit toolkit = Toolkit.getDefaultToolkit();
-        Dimension screenSize = toolkit.getScreenSize();
 
-        frame.setSize(screenSize);
+        frame.setResizable(false);
+
+        Dimension screenSize = toolkit.getScreenSize();
+        Insets insets = toolkit.getScreenInsets(frame.getGraphicsConfiguration());
+
+        Dimension windowSize = new Dimension(screenSize.width - insets.right - insets.left,
+                screenSize.height - insets.top - insets.bottom);
+
+        frame.setSize(windowSize);
 
         renderPanel = new JPanel();
 
         Dimension resolution = initializer.getManifest().getResolution();
 
         //set size and pos of panel
-        float screenAspectRatio = screenSize.width / (float)screenSize.height;
+        float screenAspectRatio = windowSize.width / (float)windowSize.height;
         float originalAspectRatio = resolution.width / (float)resolution.height;
+
+        float scaleRatio = 0;
 
         int endWidth = resolution.width, endHeight = resolution.height, x = 0, y = 0;
 
@@ -179,24 +193,32 @@ public class DefaultDisplay implements JFrameDisplay {
             //res_h = screen_h
             //adjust w
 
-            endHeight = screenSize.height;
-            endWidth *= (screenSize.height / (float)resolution.height);
+            endHeight = windowSize.height;
 
-            x = (screenSize.width - endWidth) / 2;
+            scaleRatio = (windowSize.height / (float)resolution.height);
+
+            endWidth *= scaleRatio;
+
+            x = (windowSize.width - endWidth) / 2;
         } else {
             //res_w = screen_w
             //adjust h
 
-            endWidth = screenSize.width;
-            endHeight *= (screenSize.width / (float)resolution.width);
+            endWidth = windowSize.width;
 
-            y = (screenSize.height - endHeight) / 2;
+            scaleRatio = (windowSize.width / (float)resolution.width);
+
+            endHeight *= scaleRatio;
+
+            y = (windowSize.height - endHeight) / 2;
         }
 
         renderResolution = new Dimension(endWidth, endHeight);
 
         frame.getContentPane().setBackground(BACKGROUND_COLOR);
         renderPanel.setBounds(x, y, endWidth, endHeight);
+
+        renderBuffer = new BufferedImage(endWidth, endHeight, BufferedImage.TYPE_INT_ARGB);
 
         imageRenderer.setDisplay(this);
         textRenderer.setDisplay(this);
@@ -205,6 +227,12 @@ public class DefaultDisplay implements JFrameDisplay {
         frame.setLayout(null);
         frame.add(renderPanel);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        Manifest manifest = initializer.getManifest();
+
+        int fontSize = (int)(manifest.getFontSize() * scaleRatio);
+
+        renderFont = new Font(manifest.getFontName(), Font.PLAIN, fontSize);
 
         //cursor
         BufferedImage cursorImage = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
@@ -245,9 +273,12 @@ public class DefaultDisplay implements JFrameDisplay {
                 lastTimestamp = currentTimestamp;
 
                 fillBackground();
+
                 renderImages();
                 renderTexts();
                 renderInputs();
+
+                swapBuffers();
 
                 long delay = System.currentTimeMillis() - begin;
                 long sleepFor = (int) (1000 / FPS) - delay;
@@ -263,6 +294,14 @@ public class DefaultDisplay implements JFrameDisplay {
         });
 
         thread.start();
+    }
+
+    private void swapBuffers() {
+        Graphics g = renderPanel.getGraphics();
+
+        g.drawImage(renderBuffer, 0, 0, renderResolution.width, renderResolution.height, null);
+
+        g.dispose();
     }
 
     @Override
@@ -337,12 +376,14 @@ public class DefaultDisplay implements JFrameDisplay {
     }
 
     private void fillBackground() {
-        Graphics g = renderPanel.getGraphics();
+        Graphics g = renderBuffer.getGraphics();
         Dimension renderResolution = getRenderResolution();
 
         g.setColor(BACKGROUND_COLOR);
         g.fillRect(0, 0,
                 renderResolution.width, renderResolution.height);
+
+        g.dispose();
     }
 
     @Override
@@ -351,7 +392,7 @@ public class DefaultDisplay implements JFrameDisplay {
     }
 
     @Override
-    public JPanel getPanel() {
+    public JPanel getRenderPanel() {
         return renderPanel;
     }
 
@@ -363,5 +404,15 @@ public class DefaultDisplay implements JFrameDisplay {
     @Override
     public Dimension getRenderResolution() {
         return renderResolution;
+    }
+
+    @Override
+    public BufferedImage getRenderBuffer() {
+        return renderBuffer;
+    }
+
+    @Override
+    public Font getRenderFont() {
+        return renderFont;
     }
 }

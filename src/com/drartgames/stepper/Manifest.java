@@ -10,4 +10,8 @@ public interface Manifest {
     String getQuestName();
 
     Dimension getResolution();
+
+    int getFontSize();
+
+    String getFontName();
 }

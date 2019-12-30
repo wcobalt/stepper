@@ -2,13 +2,13 @@ package com.drartgames.stepper.initializer;
 
 import com.drartgames.stepper.*;
 import com.drartgames.stepper.display.*;
+import com.drartgames.stepper.exceptions.SLVersionMismatchException;
 import com.drartgames.stepper.sl.DefaultSLInterpreter;
 import com.drartgames.stepper.sl.DefaultScriptLoaderFacade;
 import com.drartgames.stepper.sl.SLInterpreter;
 import com.drartgames.stepper.sl.ScriptLoaderFacade;
 
 import java.awt.event.KeyEvent;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -279,7 +279,7 @@ public class DefaultStepperInitializer implements Initializer {
 
         ImageDescriptor splashScreenDescriptor = display.addPicture(splashScreen, 1.0f, 0.0f, 0.0f);
         ImageDescriptor loadingIconDescriptor = display.addPicture(loadingPicture, 0.04f, 0.94f, 0.9f);
-        TextDescriptor textDescriptor = display.addText("Loading", 1.0f, 1.0f, 0.85f, 0.9f);
+        TextDescriptor textDescriptor = display.addText("Loading", 1.0f, 1.0f, 0.85f, 0.92f);
 
 
         //ScriptLoaderFacade

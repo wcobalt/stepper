@@ -1,5 +1,6 @@
 package com.drartgames.stepper;
 
+import com.drartgames.stepper.exceptions.SLVersionMismatchException;
 import com.drartgames.stepper.initializer.DefaultStepperInitializer;
 import com.drartgames.stepper.initializer.Initializer;
 
