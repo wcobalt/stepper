@@ -1,4 +1,4 @@
-package by.bsuirhc.client.util;
+package com.drartgames.stepper.utils;
 
 import java.io.File;
 import java.io.IOException;

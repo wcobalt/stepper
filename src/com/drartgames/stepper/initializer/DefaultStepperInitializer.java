@@ -1,18 +1,36 @@
 package com.drartgames.stepper.initializer;
 
-import com.drartgames.stepper.Launcher;
+import com.drartgames.stepper.*;
+import com.drartgames.stepper.display.*;
+import com.drartgames.stepper.sl.DefaultSLInterpreter;
+import com.drartgames.stepper.sl.DefaultScriptLoaderFacade;
+import com.drartgames.stepper.sl.SLInterpreter;
+import com.drartgames.stepper.sl.ScriptLoaderFacade;
 
+import java.awt.event.KeyEvent;
+import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class DefaultStepperInitializer implements Initializer {
-    private static String QUESTS_DIR = "--quests-dir";
-    private static String QUEST = "--quest";
+    private Logger logger = Logger.getLogger(DefaultStepperInitializer.class.getName());
 
+    private static final String MANIFEST_FILE_NAME = "manifest.smf";
+    private static final String SPLASH_SCREEN_PATH = "data/splash.png";
+    private static final String LOADING_PICTURE_PATH = "data/loading.png";
     private String questName;
     private File questsDirectory;
     private List<ParameterHandler> parametersHandlers;
+
+    private Manifest manifest;
+    private SLInterpreter interpreter;
+    private Display display;
+    private ScriptLoaderFacade scriptLoaderFacade;
+    private Picture splashScreen, loadingPicture;
 
     private class HelpParameterHandler implements ParameterHandler {
         private String HELP = "--help";
@@ -25,7 +43,8 @@ public class DefaultStepperInitializer implements Initializer {
 
         @Override
         public void handle(Initializer initializer, String parameter) {
-            initializer.logn(Launcher.getVersion().getFullStringVersion() + "\n");
+            initializer.logn("Stepper " + Launcher.getVersion().getFullStringVersion() + " (SL "
+                    + initializer.getInterpreter().getSLVersion().getFullStringVersion() + ")\n");
 
             for (ParameterHandler handler : initializer.getParametersHandlers()) {
                 initializer.logn(handler.getParameter() +
@@ -192,7 +211,7 @@ public class DefaultStepperInitializer implements Initializer {
     }
 
     @Override
-    public void initialize(String... args) {
+    public void initialize(String... args) throws SLVersionMismatchException {
         for (int i = 0; i < args.length; i++) {
             String parameter = args[i];
 
@@ -222,17 +241,61 @@ public class DefaultStepperInitializer implements Initializer {
             if (!wasFound)
                 throw new IllegalArgumentException("Undefined parameter " + parameter);
         }
+
+        ManifestLoader manifestLoader = new DefaultManifestLoader();
+
+        try {
+            String manifestFile = questsDirectory.getAbsolutePath() + "/" + questName + "/" + MANIFEST_FILE_NAME;
+            manifest = manifestLoader.loadManifest(new File(manifestFile));
+        } catch (IOException exc) {
+            logger.log(Level.SEVERE, "Unable to read content from " + MANIFEST_FILE_NAME, exc);
+
+            return;
+        }
+
+        interpreter = new DefaultSLInterpreter();
+
+        if (!interpreter.getSLVersion().isHigherOrEqualThan(manifest.getRequiredSLVersion())) {
+            throw new SLVersionMismatchException("Required by " + questName + " SL version (" +
+                    manifest.getRequiredSLVersion().getStringVersion() + ") is higher than the interpreter can support (" +
+                    interpreter.getSLVersion().getStringVersion() + ")");
+        }
+
+        scriptLoaderFacade = new DefaultScriptLoaderFacade();
+        display = new DefaultDisplay(manifest.getQuestName(), this);
+        display.initialize();
+
+        try {
+            splashScreen = new DefaultPicture(SPLASH_SCREEN_PATH);
+            loadingPicture = new DefaultPicture(LOADING_PICTURE_PATH);
+        } catch (IOException exc) {
+            logger.log(Level.SEVERE, "Unable to load splash screen image", exc);
+        }
     }
 
     @Override
     public void run() {
-        //load manifest
-        //show splash
-        //AnalyzerFacade
+        display.run();
+
+        ImageDescriptor splashScreenDescriptor = display.addPicture(splashScreen, 1.0f, 0.0f, 0.0f);
+        ImageDescriptor loadingIconDescriptor = display.addPicture(loadingPicture, 0.04f, 0.94f, 0.9f);
+        TextDescriptor textDescriptor = display.addText("Loading", 1.0f, 1.0f, 0.85f, 0.9f);
+
+
+        //ScriptLoaderFacade
             //load all scenes scripts
         //start interpreter
             //load scenes
         //show to start press [ENTER]
+        display.awaitForKey(KeyEvent.VK_ENTER, () -> {
+            System.out.println("enter");
+        });
+        textDescriptor.setMessage("Нажмите ENTER");
+        try {
+            Thread.sleep(10000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -267,5 +330,25 @@ public class DefaultStepperInitializer implements Initializer {
     @Override
     public File getQuestsDirectory() {
         return questsDirectory;
+    }
+
+    @Override
+    public SLInterpreter getInterpreter() {
+        return interpreter;
+    }
+
+    @Override
+    public Manifest getManifest() {
+        return manifest;
+    }
+
+    @Override
+    public ScriptLoaderFacade getScriptLoaderFacade() {
+        return scriptLoaderFacade;
+    }
+
+    @Override
+    public Display getDisplay() {
+        return display;
     }
 }
