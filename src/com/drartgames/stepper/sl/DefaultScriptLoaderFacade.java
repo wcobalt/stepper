@@ -1,17 +1,24 @@
 package com.drartgames.stepper.sl;
 
+import com.drartgames.stepper.utils.DefaultFileService;
+import com.drartgames.stepper.utils.FileService;
+
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class DefaultScriptLoaderFacade implements ScriptLoaderFacade {
     private Logger logger = Logger.getLogger(DefaultScriptLoaderFacade.class.getName());
     private ScriptLoader scriptLoader;
+    private FileService fileService;
     private static final String SSF_EXTENSION = ".ssf";
 
     public DefaultScriptLoaderFacade() {
         scriptLoader = new DefaultScriptLoader();
+        fileService = new DefaultFileService();
     }
 
     @Override
@@ -35,9 +42,16 @@ public class DefaultScriptLoaderFacade implements ScriptLoaderFacade {
                                 file.getAbsolutePath().substring(scenesDirectory.getAbsolutePath().length() + 1);
 
                         logger.info("Loading SSF file: " + fileNameRelativeToScenes);
-                        List<Scene> scenes = scriptLoader.load(file);
 
-                        allScenes.addAll(scenes);
+                        try {
+                            String fileContent = fileService.readAllContent(file);
+
+                            List<Scene> scenes = scriptLoader.load(fileContent);
+
+                            allScenes.addAll(scenes);
+                        } catch (IOException exc) {
+                            logger.log(Level.SEVERE, "Unable to read file: " + fileNameRelativeToScenes, exc);
+                        }
                     }
                 }
             }
