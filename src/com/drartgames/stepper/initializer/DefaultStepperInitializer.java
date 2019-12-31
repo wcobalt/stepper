@@ -2,6 +2,7 @@ package com.drartgames.stepper.initializer;
 
 import com.drartgames.stepper.*;
 import com.drartgames.stepper.display.*;
+import com.drartgames.stepper.exceptions.NoInitSceneException;
 import com.drartgames.stepper.exceptions.SLVersionMismatchException;
 import com.drartgames.stepper.sl.DefaultSLInterpreter;
 import com.drartgames.stepper.sl.DefaultScriptLoaderFacade;
@@ -22,6 +23,8 @@ public class DefaultStepperInitializer implements Initializer {
     private static final String MANIFEST_FILE_NAME = "manifest.smf";
     private static final String SPLASH_SCREEN_PATH = "data/splash.png";
     private static final String LOADING_PICTURE_PATH = "data/loading.png";
+    private static final String SCENES_PATH = "scenes";
+
     private String questName;
     private File questsDirectory;
     private List<ParameterHandler> parametersHandlers;
@@ -291,23 +294,23 @@ public class DefaultStepperInitializer implements Initializer {
                 new SimpleAnimation(3000, 0.03f, false),
                 false, true);
 
-        //ScriptLoaderFacade
-            //load all scenes scripts
-        //start interpreter
-            //load scenes
-        //show to start press [ENTER]
+        String pathToScenes = questsDirectory.getAbsolutePath() + "/" + questName + "/" + SCENES_PATH;
+        scriptLoaderFacade.load(interpreter, new File(pathToScenes));
+
         display.awaitForKey(KeyEvent.VK_ENTER, (KeyAwaitDescriptor keyAwaitDescriptor) -> {
-            System.out.println("enter");
+            Thread thread = new Thread(() -> {
+                try {
+                    interpreter.run();
+                } catch (NoInitSceneException exc) {
+                    logger.log(Level.SEVERE, "There's no loaded init scene", exc);
+                }
+            });
+
+            thread.start();
             keyAwaitDescriptor.setDoFree(true);
         });
 
         textDescriptor.setMessage("Нажмите ENTER");
-
-        try {
-            Thread.sleep(5000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
     }
 
     @Override
