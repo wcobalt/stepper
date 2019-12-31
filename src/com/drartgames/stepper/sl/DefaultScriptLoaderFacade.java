@@ -1,5 +1,6 @@
 package com.drartgames.stepper.sl;
 
+import com.drartgames.stepper.exceptions.AnalysisException;
 import com.drartgames.stepper.exceptions.ParseException;
 import com.drartgames.stepper.sl.lang.Scene;
 import com.drartgames.stepper.utils.DefaultFileService;
@@ -19,7 +20,7 @@ public class DefaultScriptLoaderFacade implements ScriptLoaderFacade {
     private static final String SSF_EXTENSION = ".ssf";
 
     public DefaultScriptLoaderFacade() {
-        scriptLoader = new DefaultScriptLoader();
+        scriptLoader = new DefaultSLScriptLoader();
         fileService = new DefaultFileService();
     }
 
@@ -55,6 +56,8 @@ public class DefaultScriptLoaderFacade implements ScriptLoaderFacade {
                             logger.log(Level.SEVERE, "Unable to read file: " + fileNameRelativeToScenes, exc);
                         } catch (ParseException exc) {
                             logger.log(Level.SEVERE, "Parse exception", exc);
+                        } catch (AnalysisException exc) {
+                            logger.log(Level.SEVERE, "Analysis exception", exc);
                         }
                     }
                 }

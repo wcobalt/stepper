@@ -150,17 +150,25 @@ public class SLParser implements Parser {
                         break;
                     case SINGLE_LINE_COMMENT:
                         //end of text
-                        int endLinePos = tokenizer.getText().indexOf(NEWLINE, tokenizer.getCurrentPosition());
+                        int currentPosition = tokenizer.getCurrentPosition();
+                        int endLinePos = tokenizer.getText().indexOf(NEWLINE, currentPosition);
                         int textSize = tokenizer.getText().length();
 
                         //if it's the text's end or after new line there's nothing
-                        if (endLinePos == -1 || endLinePos + 1 >= textSize) {
-                            tokenizer.setCurrentPosition(textSize);
+
+                        if (endLinePos == -1) {
+                            tokenizer.rewindFor(textSize - currentPosition);
 
                             return false;
                         }
 
-                        tokenizer.setCurrentPosition(endLinePos + 1);
+                        if (endLinePos + 1 >= textSize) {
+                            tokenizer.rewindFor(textSize - currentPosition + 1);
+
+                            return false;
+                        }
+
+                        tokenizer.rewindFor(endLinePos - currentPosition + 1);
 
                         doRepeat = true;
 

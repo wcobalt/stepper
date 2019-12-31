@@ -114,8 +114,13 @@ public class DefaultTokenizer implements Tokenizer {
     }
 
     @Override
-    public void setCurrentPosition(int position) {
-        currentPosition = position;
+    public void rewindFor(int length) {
+        for (int i = 0; i < length; i++) {
+            if (text.charAt(currentPosition + i) == NEWLINE)
+                currentLineNumber++;
+        }
+
+        currentPosition += length;
     }
 
     @Override

@@ -15,7 +15,7 @@ public interface Tokenizer {
 
     int getTokenType();
 
-    void setCurrentPosition(int position);
+    void rewindFor(int length);
 
     String getText();
 }
