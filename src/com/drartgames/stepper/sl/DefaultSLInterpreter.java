@@ -2,6 +2,9 @@ package com.drartgames.stepper.sl;
 
 import com.drartgames.stepper.DefaultVersion;
 import com.drartgames.stepper.Version;
+import com.drartgames.stepper.exceptions.NoInitSceneException;
+
+import java.util.List;
 
 public class DefaultSLInterpreter implements SLInterpreter {
     private Version version;
@@ -13,5 +16,15 @@ public class DefaultSLInterpreter implements SLInterpreter {
     @Override
     public Version getSLVersion() {
         return version;
+    }
+
+    @Override
+    public void run() throws NoInitSceneException {
+
+    }
+
+    @Override
+    public void loadScenes(List<Scene> scenes) {
+
     }
 }
