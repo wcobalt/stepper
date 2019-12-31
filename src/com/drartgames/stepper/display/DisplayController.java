@@ -1,10 +1,6 @@
 package com.drartgames.stepper.display;
 
 public interface DisplayController {
-    void showLoading(String message);
-
-    void hideLoading();
-
     Display getDisplay();
 
     void showMessage(String message, Picture picture);
