@@ -86,6 +86,34 @@ public class DefaultManifestLoader implements ManifestLoader {
         }
     }
 
+    private class FontSizeLoader implements FieldLoader {
+        private static final String FONT_SIZE_FIELD = "font_size";
+
+        @Override
+        public void load(String value, ManifestBuilder manifestBuilder) {
+            manifestBuilder.setFontSize(Integer.valueOf(value));
+        }
+
+        @Override
+        public String getFieldName() {
+            return FONT_SIZE_FIELD;
+        }
+    }
+
+    private class FontNameLoader implements FieldLoader {
+        private static final String FONT_NAME_FIELD = "font_name";
+
+        @Override
+        public void load(String value, ManifestBuilder manifestBuilder) {
+            manifestBuilder.setFontName(value);
+        }
+
+        @Override
+        public String getFieldName() {
+            return FONT_NAME_FIELD;
+        }
+    }
+
     private List<FieldLoader> fieldLoaders;
 
     public DefaultManifestLoader() {
@@ -95,6 +123,8 @@ public class DefaultManifestLoader implements ManifestLoader {
         fieldLoaders.add(new InitSceneLoader());
         fieldLoaders.add(new QuestNameLoader());
         fieldLoaders.add(new ResolutionLoader());
+        fieldLoaders.add(new FontSizeLoader());
+        fieldLoaders.add(new FontNameLoader());
     }
 
     @Override

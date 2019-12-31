@@ -2,13 +2,14 @@ package com.drartgames.stepper.initializer;
 
 import com.drartgames.stepper.*;
 import com.drartgames.stepper.display.*;
+import com.drartgames.stepper.exceptions.NoInitSceneException;
+import com.drartgames.stepper.exceptions.SLVersionMismatchException;
 import com.drartgames.stepper.sl.DefaultSLInterpreter;
 import com.drartgames.stepper.sl.DefaultScriptLoaderFacade;
 import com.drartgames.stepper.sl.SLInterpreter;
 import com.drartgames.stepper.sl.ScriptLoaderFacade;
 
 import java.awt.event.KeyEvent;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -22,6 +23,8 @@ public class DefaultStepperInitializer implements Initializer {
     private static final String MANIFEST_FILE_NAME = "manifest.smf";
     private static final String SPLASH_SCREEN_PATH = "data/splash.png";
     private static final String LOADING_PICTURE_PATH = "data/loading.png";
+    private static final String SCENES_PATH = "scenes";
+
     private String questName;
     private File questsDirectory;
     private List<ParameterHandler> parametersHandlers;
@@ -279,23 +282,35 @@ public class DefaultStepperInitializer implements Initializer {
 
         ImageDescriptor splashScreenDescriptor = display.addPicture(splashScreen, 1.0f, 0.0f, 0.0f);
         ImageDescriptor loadingIconDescriptor = display.addPicture(loadingPicture, 0.04f, 0.94f, 0.9f);
-        TextDescriptor textDescriptor = display.addText("Loading", 1.0f, 1.0f, 0.85f, 0.9f);
+        TextDescriptor textDescriptor = display.addText("Loading", 0.1f, 1.0f, 0.85f, 0.92f);
 
+        InputDescriptor input = display.addInput(0.2f, 0.05f, 0.3f, 0.3f);
+        display.setActiveInput(input);
 
-        //ScriptLoaderFacade
-            //load all scenes scripts
-        //start interpreter
-            //load scenes
-        //show to start press [ENTER]
-        display.awaitForKey(KeyEvent.VK_ENTER, () -> {
-            System.out.println("enter");
+        textDescriptor.setWordWrap(true);
+        display.setScrollableText(textDescriptor);
+
+        AnimationDescriptor descriptor = display.addAnimation(loadingIconDescriptor,
+                new SimpleAnimation(3000, 0.03f, false),
+                false, true);
+
+        String pathToScenes = questsDirectory.getAbsolutePath() + "/" + questName + "/" + SCENES_PATH;
+        scriptLoaderFacade.load(interpreter, new File(pathToScenes));
+
+        display.awaitForKey(KeyEvent.VK_ENTER, (KeyAwaitDescriptor keyAwaitDescriptor) -> {
+            Thread thread = new Thread(() -> {
+                try {
+                    interpreter.run();
+                } catch (NoInitSceneException exc) {
+                    logger.log(Level.SEVERE, "There's no loaded init scene", exc);
+                }
+            });
+
+            thread.start();
+            keyAwaitDescriptor.setDoFree(true);
         });
+
         textDescriptor.setMessage("Нажмите ENTER");
-        try {
-            Thread.sleep(10000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
     }
 
     @Override

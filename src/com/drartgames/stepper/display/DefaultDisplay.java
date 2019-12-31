@@ -1,8 +1,7 @@
 package com.drartgames.stepper.display;
 
+import com.drartgames.stepper.Manifest;
 import com.drartgames.stepper.initializer.Initializer;
-import com.drartgames.stepper.utils.Work;
-import com.drartgames.stepper.initializer.DefaultStepperInitializer;
 
 import javax.swing.*;
 import java.awt.*;
@@ -10,6 +9,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -29,25 +29,7 @@ public class DefaultDisplay implements JFrameDisplay {
     private List<TextDescriptor> texts;
     private List<InputDescriptor> inputs;
 
-    private class KeyAwaiterDescriptor {
-        private Work work;
-        private int key;
-
-        public KeyAwaiterDescriptor(int key, Work work) {
-            this.key = key;
-            this.work = work;
-        }
-
-        public Work getWork() {
-            return work;
-        }
-
-        public int getKey() {
-            return key;
-        }
-    }
-
-    private List<KeyAwaiterDescriptor> keyAwaiters;
+    private List<KeyAwaitDescriptor> keyAwaiters;
 
     private InputDescriptor activeInput;
     private TextDescriptor activeScrollableText;
@@ -64,6 +46,9 @@ public class DefaultDisplay implements JFrameDisplay {
     private JPanel renderPanel;
 
     private Dimension renderResolution;
+    private BufferedImage renderBuffer;
+
+    private Font renderFont;
 
     public DefaultDisplay(String title, Initializer initializer) {
         images = new ArrayList<>();
@@ -81,6 +66,7 @@ public class DefaultDisplay implements JFrameDisplay {
         activeScrollableText = null;
 
         frame = new JFrame(title);
+
         this.initializer = initializer;
     }
 
@@ -103,10 +89,13 @@ public class DefaultDisplay implements JFrameDisplay {
     }
 
     @Override
-    public AnimationDescriptor addAnimation(ImageDescriptor imageDescriptor, Animation animation, boolean isLooped) {
-        AnimationDescriptor animationDescriptor = new DefaultAnimationDescriptor(this, imageDescriptor, animation, isLooped);
+    public AnimationDescriptor addAnimation(ImageDescriptor imageDescriptor, Animation animation, boolean isLooped,
+                                            boolean doReturnBack) {
+        AnimationDescriptor animationDescriptor = new DefaultAnimationDescriptor(this, imageDescriptor, animation,
+                isLooped, doReturnBack);
 
         animations.add(animationDescriptor);
+        animationDescriptor.getAnimation().setInitPos(imageDescriptor);
 
         return animationDescriptor;
     }
@@ -140,10 +129,12 @@ public class DefaultDisplay implements JFrameDisplay {
     }
 
     @Override
-    public void awaitForKey(int key, Work work) {
-        KeyAwaiterDescriptor keyAwaiterDescriptor = new KeyAwaiterDescriptor(key, work);
+    public KeyAwaitDescriptor awaitForKey(int key, KeyAwaitWork keyAwaitWork) {
+        KeyAwaitDescriptor keyAwaiterDescriptor = new DefaultKeyAwaitDescriptor(key, keyAwaitWork);
 
         keyAwaiters.add(keyAwaiterDescriptor);
+
+        return keyAwaiterDescriptor;
     }
 
     @Override
@@ -161,17 +152,26 @@ public class DefaultDisplay implements JFrameDisplay {
         frame.setUndecorated(true);
 
         Toolkit toolkit = Toolkit.getDefaultToolkit();
-        Dimension screenSize = toolkit.getScreenSize();
 
-        frame.setSize(screenSize);
+        frame.setResizable(false);
+
+        Dimension screenSize = toolkit.getScreenSize();
+        Insets insets = toolkit.getScreenInsets(frame.getGraphicsConfiguration());
+
+        Dimension windowSize = new Dimension(screenSize.width - insets.right - insets.left,
+                screenSize.height - insets.top - insets.bottom);
+
+        frame.setSize(windowSize);
 
         renderPanel = new JPanel();
 
         Dimension resolution = initializer.getManifest().getResolution();
 
         //set size and pos of panel
-        float screenAspectRatio = screenSize.width / (float)screenSize.height;
+        float screenAspectRatio = windowSize.width / (float)windowSize.height;
         float originalAspectRatio = resolution.width / (float)resolution.height;
+
+        float scaleRatio = 0;
 
         int endWidth = resolution.width, endHeight = resolution.height, x = 0, y = 0;
 
@@ -179,24 +179,32 @@ public class DefaultDisplay implements JFrameDisplay {
             //res_h = screen_h
             //adjust w
 
-            endHeight = screenSize.height;
-            endWidth *= (screenSize.height / (float)resolution.height);
+            endHeight = windowSize.height;
 
-            x = (screenSize.width - endWidth) / 2;
+            scaleRatio = (windowSize.height / (float)resolution.height);
+
+            endWidth *= scaleRatio;
+
+            x = (windowSize.width - endWidth) / 2;
         } else {
             //res_w = screen_w
             //adjust h
 
-            endWidth = screenSize.width;
-            endHeight *= (screenSize.width / (float)resolution.width);
+            endWidth = windowSize.width;
 
-            y = (screenSize.height - endHeight) / 2;
+            scaleRatio = (windowSize.width / (float)resolution.width);
+
+            endHeight *= scaleRatio;
+
+            y = (windowSize.height - endHeight) / 2;
         }
 
         renderResolution = new Dimension(endWidth, endHeight);
 
         frame.getContentPane().setBackground(BACKGROUND_COLOR);
         renderPanel.setBounds(x, y, endWidth, endHeight);
+
+        renderBuffer = new BufferedImage(endWidth, endHeight, BufferedImage.TYPE_INT_ARGB);
 
         imageRenderer.setDisplay(this);
         textRenderer.setDisplay(this);
@@ -205,6 +213,12 @@ public class DefaultDisplay implements JFrameDisplay {
         frame.setLayout(null);
         frame.add(renderPanel);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        Manifest manifest = initializer.getManifest();
+
+        int fontSize = (int)(manifest.getFontSize() * scaleRatio);
+
+        renderFont = new Font(manifest.getFontName(), Font.PLAIN, fontSize);
 
         //cursor
         BufferedImage cursorImage = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
@@ -221,6 +235,11 @@ public class DefaultDisplay implements JFrameDisplay {
             @Override
             public void keyReleased(KeyEvent e) {
                 handleKeyRelease(e);
+            }
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+                handleKeyPress(e);
             }
         });
     }
@@ -245,9 +264,12 @@ public class DefaultDisplay implements JFrameDisplay {
                 lastTimestamp = currentTimestamp;
 
                 fillBackground();
+
                 renderImages();
                 renderTexts();
                 renderInputs();
+
+                swapBuffers();
 
                 long delay = System.currentTimeMillis() - begin;
                 long sleepFor = (int) (1000 / FPS) - delay;
@@ -265,6 +287,14 @@ public class DefaultDisplay implements JFrameDisplay {
         thread.start();
     }
 
+    private void swapBuffers() {
+        Graphics g = renderPanel.getGraphics();
+
+        g.drawImage(renderBuffer, 0, 0, renderResolution.width, renderResolution.height, null);
+
+        g.dispose();
+    }
+
     @Override
     public void stop() {
         isRunning = false;
@@ -273,8 +303,17 @@ public class DefaultDisplay implements JFrameDisplay {
     private void handleKeyType(KeyEvent keyEvent) {
         char typed = keyEvent.getKeyChar();
 
-        if (typed != KeyEvent.CHAR_UNDEFINED && activeInput != null) {
+        if (typed != KeyEvent.CHAR_UNDEFINED && typed != KeyEvent.VK_BACK_SPACE && activeInput != null) {
             activeInput.setCurrentText(activeInput.getCurrentText() + typed);
+        }
+    }
+
+    private void handleKeyPress(KeyEvent keyEvent) {
+        if (keyEvent.getKeyCode() == KeyEvent.VK_BACK_SPACE && activeInput != null) {
+            String text = activeInput.getCurrentText();
+
+            if (text.length() > 0)
+                activeInput.setCurrentText(text.substring(0, text.length() - 1));
         }
     }
 
@@ -286,12 +325,12 @@ public class DefaultDisplay implements JFrameDisplay {
 
             switch (keyCode) {
                 case SCROLL_DOWN_KEYCODE:
-                    scroll = -1 * SCROLL_WEIGHT;
+                    scroll = SCROLL_WEIGHT;
 
                     break;
 
                 case SCROLL_UP_KEYCODE:
-                    scroll = SCROLL_WEIGHT;
+                    scroll = -1 * SCROLL_WEIGHT;
 
                     break;
             }
@@ -300,9 +339,17 @@ public class DefaultDisplay implements JFrameDisplay {
                 activeScrollableText.setScrollPosition(activeScrollableText.getScrollPosition() + scroll);
         }
 
-        for (KeyAwaiterDescriptor descriptor : keyAwaiters) {
-            if (descriptor.key == keyCode)
-                descriptor.work.execute();
+        Iterator<KeyAwaitDescriptor> iterator = keyAwaiters.iterator();
+
+        while (iterator.hasNext()) {
+            KeyAwaitDescriptor descriptor = iterator.next();
+
+            if (descriptor.getKey() == keyCode) {
+                descriptor.getWork().execute(descriptor);
+
+                if (descriptor.doFree())
+                    iterator.remove();
+            }
         }
     }
 
@@ -313,8 +360,23 @@ public class DefaultDisplay implements JFrameDisplay {
     }
 
     private void handleAnimations(long deltaTime) {
-        for (AnimationDescriptor descriptor : animations) {
-            descriptor.getAnimation().update(descriptor.getImageDescriptor(), deltaTime);
+        Iterator<AnimationDescriptor> iterator = animations.iterator();
+
+        while (iterator.hasNext()) {
+            AnimationDescriptor descriptor = iterator.next();
+
+            boolean isEnded = descriptor.getAnimation().update(descriptor.getImageDescriptor(), deltaTime);
+
+            if (isEnded) {
+                if (descriptor.isLooped())
+                    descriptor.getAnimation().loopEnded();
+                else {
+                    if (descriptor.doReturnBack())
+                        descriptor.getAnimation().backToInitPos(descriptor.getImageDescriptor());
+
+                    iterator.remove();
+                }
+            }
         }
     }
 
@@ -337,12 +399,14 @@ public class DefaultDisplay implements JFrameDisplay {
     }
 
     private void fillBackground() {
-        Graphics g = renderPanel.getGraphics();
+        Graphics g = renderBuffer.getGraphics();
         Dimension renderResolution = getRenderResolution();
 
         g.setColor(BACKGROUND_COLOR);
         g.fillRect(0, 0,
                 renderResolution.width, renderResolution.height);
+
+        g.dispose();
     }
 
     @Override
@@ -351,7 +415,7 @@ public class DefaultDisplay implements JFrameDisplay {
     }
 
     @Override
-    public JPanel getPanel() {
+    public JPanel getRenderPanel() {
         return renderPanel;
     }
 
@@ -363,5 +427,15 @@ public class DefaultDisplay implements JFrameDisplay {
     @Override
     public Dimension getRenderResolution() {
         return renderResolution;
+    }
+
+    @Override
+    public BufferedImage getRenderBuffer() {
+        return renderBuffer;
+    }
+
+    @Override
+    public Font getRenderFont() {
+        return renderFont;
     }
 }

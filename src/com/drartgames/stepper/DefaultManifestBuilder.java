@@ -4,8 +4,9 @@ import java.awt.*;
 
 public class DefaultManifestBuilder implements ManifestBuilder {
     private Version requiredSLVersion;
-    private String initSceneName, questName;
+    private String initSceneName, questName, fontName;
     private Dimension resolution;
+    private int fontSize;
 
     //@todo add arguments checks everywhere
     @Override
@@ -29,7 +30,17 @@ public class DefaultManifestBuilder implements ManifestBuilder {
     }
 
     @Override
+    public void setFontSize(int fontSize) {
+        this.fontSize = fontSize;
+    }
+
+    @Override
+    public void setFontName(String fontName) {
+        this.fontName = fontName;
+    }
+
+    @Override
     public Manifest build() {
-        return new DefaultManifest(requiredSLVersion, initSceneName, questName, resolution);
+        return new DefaultManifest(requiredSLVersion, initSceneName, questName, resolution, fontSize, fontName);
     }
 }

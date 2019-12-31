@@ -5,6 +5,7 @@ public class DefaultTextDescriptor implements TextDescriptor {
     private float width, height, x, y;
     private Display display;
     private int scrollPosition;
+    private boolean wordWrap;
 
     public DefaultTextDescriptor(Display display, String message, float width, float height, float x, float y) {
         this.display = display;
@@ -13,6 +14,7 @@ public class DefaultTextDescriptor implements TextDescriptor {
         this.height = height;
         this.x = x;
         this.y = y;
+        this.wordWrap = false;
 
         scrollPosition = 0;
     }
@@ -80,5 +82,15 @@ public class DefaultTextDescriptor implements TextDescriptor {
     @Override
     public void setMessage(String message) {
         this.message = message;
+    }
+
+    @Override
+    public void setWordWrap(boolean wordWrap) {
+        this.wordWrap = wordWrap;
+    }
+
+    @Override
+    public boolean isWordWrap() {
+        return wordWrap;
     }
 }

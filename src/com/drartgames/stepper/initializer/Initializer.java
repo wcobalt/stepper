@@ -1,7 +1,7 @@
 package com.drartgames.stepper.initializer;
 
 import com.drartgames.stepper.Manifest;
-import com.drartgames.stepper.SLVersionMismatchException;
+import com.drartgames.stepper.exceptions.SLVersionMismatchException;
 import com.drartgames.stepper.display.Display;
 import com.drartgames.stepper.sl.SLInterpreter;
 import com.drartgames.stepper.sl.ScriptLoaderFacade;

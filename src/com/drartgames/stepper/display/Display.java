@@ -1,7 +1,6 @@
 package com.drartgames.stepper.display;
 
 import com.drartgames.stepper.initializer.Initializer;
-import com.drartgames.stepper.utils.Work;
 
 import java.awt.*;
 
@@ -10,7 +9,7 @@ public interface Display {
 
     AudioDescriptor addAudio(Audio audio, boolean isLooped);
 
-    AnimationDescriptor addAnimation(ImageDescriptor imageDescriptor, Animation animation, boolean isLooped);
+    AnimationDescriptor addAnimation(ImageDescriptor imageDescriptor, Animation animation, boolean isLooped, boolean doReturnBack);
 
     TextDescriptor addText(String message, float width, float height, float x, float y);
 
@@ -20,7 +19,7 @@ public interface Display {
 
     void setActiveInput(InputDescriptor inputDescriptor);
 
-    void awaitForKey(int key, Work work);
+    KeyAwaitDescriptor awaitForKey(int key, KeyAwaitWork keyAwaitWork);
 
     TextDescriptor getScrollableText();
 
