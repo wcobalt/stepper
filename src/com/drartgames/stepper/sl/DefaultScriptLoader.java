@@ -1,5 +1,6 @@
 package com.drartgames.stepper.sl;
 
+import com.drartgames.stepper.exceptions.ParseException;
 import com.drartgames.stepper.sl.parser.Parser;
 import com.drartgames.stepper.sl.parser.SLParser;
 
@@ -14,7 +15,9 @@ public class DefaultScriptLoader implements ScriptLoader {
     }
 
     @Override
-    public List<Scene> load(String content) {
+    public List<Scene> load(String content) throws ParseException {
+        parser.parse(content);
+
         try {
             while (parser.next()) {
                 System.out.println(parser.getTokenValue() + "->" + parser.getTokenType());

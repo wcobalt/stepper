@@ -1,5 +1,6 @@
 package com.drartgames.stepper.sl;
 
+import com.drartgames.stepper.exceptions.ParseException;
 import com.drartgames.stepper.utils.DefaultFileService;
 import com.drartgames.stepper.utils.FileService;
 
@@ -51,6 +52,8 @@ public class DefaultScriptLoaderFacade implements ScriptLoaderFacade {
                             allScenes.addAll(scenes);
                         } catch (IOException exc) {
                             logger.log(Level.SEVERE, "Unable to read file: " + fileNameRelativeToScenes, exc);
+                        } catch (ParseException exc) {
+                            logger.log(Level.SEVERE, "Parse exception", exc);
                         }
                     }
                 }
