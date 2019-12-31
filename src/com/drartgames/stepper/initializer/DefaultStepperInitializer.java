@@ -279,20 +279,32 @@ public class DefaultStepperInitializer implements Initializer {
 
         ImageDescriptor splashScreenDescriptor = display.addPicture(splashScreen, 1.0f, 0.0f, 0.0f);
         ImageDescriptor loadingIconDescriptor = display.addPicture(loadingPicture, 0.04f, 0.94f, 0.9f);
-        TextDescriptor textDescriptor = display.addText("Loading", 1.0f, 1.0f, 0.85f, 0.92f);
+        TextDescriptor textDescriptor = display.addText("Loading", 0.1f, 1.0f, 0.85f, 0.92f);
 
+        InputDescriptor input = display.addInput(0.2f, 0.05f, 0.3f, 0.3f);
+        display.setActiveInput(input);
+
+        textDescriptor.setWordWrap(true);
+        display.setScrollableText(textDescriptor);
+
+        AnimationDescriptor descriptor = display.addAnimation(loadingIconDescriptor,
+                new SimpleAnimation(3000, 0.03f, false),
+                false, true);
 
         //ScriptLoaderFacade
             //load all scenes scripts
         //start interpreter
             //load scenes
         //show to start press [ENTER]
-        display.awaitForKey(KeyEvent.VK_ENTER, () -> {
+        display.awaitForKey(KeyEvent.VK_ENTER, (KeyAwaitDescriptor keyAwaitDescriptor) -> {
             System.out.println("enter");
+            keyAwaitDescriptor.setDoFree(true);
         });
+
         textDescriptor.setMessage("Нажмите ENTER");
+
         try {
-            Thread.sleep(10000);
+            Thread.sleep(5000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

@@ -9,5 +9,7 @@ public interface AnimationDescriptor {
 
     void setIsLooped(boolean isLooped);
 
+    boolean doReturnBack();
+
     Display getDisplay();
 }

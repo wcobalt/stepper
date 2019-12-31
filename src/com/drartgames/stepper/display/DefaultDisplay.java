@@ -2,8 +2,6 @@ package com.drartgames.stepper.display;
 
 import com.drartgames.stepper.Manifest;
 import com.drartgames.stepper.initializer.Initializer;
-import com.drartgames.stepper.utils.Work;
-import com.drartgames.stepper.initializer.DefaultStepperInitializer;
 
 import javax.swing.*;
 import java.awt.*;
@@ -11,6 +9,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -30,25 +29,7 @@ public class DefaultDisplay implements JFrameDisplay {
     private List<TextDescriptor> texts;
     private List<InputDescriptor> inputs;
 
-    private class KeyAwaiterDescriptor {
-        private Work work;
-        private int key;
-
-        public KeyAwaiterDescriptor(int key, Work work) {
-            this.key = key;
-            this.work = work;
-        }
-
-        public Work getWork() {
-            return work;
-        }
-
-        public int getKey() {
-            return key;
-        }
-    }
-
-    private List<KeyAwaiterDescriptor> keyAwaiters;
+    private List<KeyAwaitDescriptor> keyAwaiters;
 
     private InputDescriptor activeInput;
     private TextDescriptor activeScrollableText;
@@ -108,10 +89,13 @@ public class DefaultDisplay implements JFrameDisplay {
     }
 
     @Override
-    public AnimationDescriptor addAnimation(ImageDescriptor imageDescriptor, Animation animation, boolean isLooped) {
-        AnimationDescriptor animationDescriptor = new DefaultAnimationDescriptor(this, imageDescriptor, animation, isLooped);
+    public AnimationDescriptor addAnimation(ImageDescriptor imageDescriptor, Animation animation, boolean isLooped,
+                                            boolean doReturnBack) {
+        AnimationDescriptor animationDescriptor = new DefaultAnimationDescriptor(this, imageDescriptor, animation,
+                isLooped, doReturnBack);
 
         animations.add(animationDescriptor);
+        animationDescriptor.getAnimation().setInitPos(imageDescriptor);
 
         return animationDescriptor;
     }
@@ -145,10 +129,12 @@ public class DefaultDisplay implements JFrameDisplay {
     }
 
     @Override
-    public void awaitForKey(int key, Work work) {
-        KeyAwaiterDescriptor keyAwaiterDescriptor = new KeyAwaiterDescriptor(key, work);
+    public KeyAwaitDescriptor awaitForKey(int key, KeyAwaitWork keyAwaitWork) {
+        KeyAwaitDescriptor keyAwaiterDescriptor = new DefaultKeyAwaitDescriptor(key, keyAwaitWork);
 
         keyAwaiters.add(keyAwaiterDescriptor);
+
+        return keyAwaiterDescriptor;
     }
 
     @Override
@@ -250,6 +236,11 @@ public class DefaultDisplay implements JFrameDisplay {
             public void keyReleased(KeyEvent e) {
                 handleKeyRelease(e);
             }
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+                handleKeyPress(e);
+            }
         });
     }
 
@@ -312,8 +303,17 @@ public class DefaultDisplay implements JFrameDisplay {
     private void handleKeyType(KeyEvent keyEvent) {
         char typed = keyEvent.getKeyChar();
 
-        if (typed != KeyEvent.CHAR_UNDEFINED && activeInput != null) {
+        if (typed != KeyEvent.CHAR_UNDEFINED && typed != KeyEvent.VK_BACK_SPACE && activeInput != null) {
             activeInput.setCurrentText(activeInput.getCurrentText() + typed);
+        }
+    }
+
+    private void handleKeyPress(KeyEvent keyEvent) {
+        if (keyEvent.getKeyCode() == KeyEvent.VK_BACK_SPACE && activeInput != null) {
+            String text = activeInput.getCurrentText();
+
+            if (text.length() > 0)
+                activeInput.setCurrentText(text.substring(0, text.length() - 1));
         }
     }
 
@@ -325,12 +325,12 @@ public class DefaultDisplay implements JFrameDisplay {
 
             switch (keyCode) {
                 case SCROLL_DOWN_KEYCODE:
-                    scroll = -1 * SCROLL_WEIGHT;
+                    scroll = SCROLL_WEIGHT;
 
                     break;
 
                 case SCROLL_UP_KEYCODE:
-                    scroll = SCROLL_WEIGHT;
+                    scroll = -1 * SCROLL_WEIGHT;
 
                     break;
             }
@@ -339,9 +339,17 @@ public class DefaultDisplay implements JFrameDisplay {
                 activeScrollableText.setScrollPosition(activeScrollableText.getScrollPosition() + scroll);
         }
 
-        for (KeyAwaiterDescriptor descriptor : keyAwaiters) {
-            if (descriptor.key == keyCode)
-                descriptor.work.execute();
+        Iterator<KeyAwaitDescriptor> iterator = keyAwaiters.iterator();
+
+        while (iterator.hasNext()) {
+            KeyAwaitDescriptor descriptor = iterator.next();
+
+            if (descriptor.getKey() == keyCode) {
+                descriptor.getWork().execute(descriptor);
+
+                if (descriptor.doFree())
+                    iterator.remove();
+            }
         }
     }
 
@@ -352,8 +360,23 @@ public class DefaultDisplay implements JFrameDisplay {
     }
 
     private void handleAnimations(long deltaTime) {
-        for (AnimationDescriptor descriptor : animations) {
-            descriptor.getAnimation().update(descriptor.getImageDescriptor(), deltaTime);
+        Iterator<AnimationDescriptor> iterator = animations.iterator();
+
+        while (iterator.hasNext()) {
+            AnimationDescriptor descriptor = iterator.next();
+
+            boolean isEnded = descriptor.getAnimation().update(descriptor.getImageDescriptor(), deltaTime);
+
+            if (isEnded) {
+                if (descriptor.isLooped())
+                    descriptor.getAnimation().loopEnded();
+                else {
+                    if (descriptor.doReturnBack())
+                        descriptor.getAnimation().backToInitPos(descriptor.getImageDescriptor());
+
+                    iterator.remove();
+                }
+            }
         }
     }
 

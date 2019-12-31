@@ -4,13 +4,15 @@ public class DefaultAnimationDescriptor implements AnimationDescriptor {
     private Display display;
     private ImageDescriptor imageDescriptor;
     private Animation animation;
-    private boolean isLooped;
+    private boolean isLooped, doReturnBack;
 
-    public DefaultAnimationDescriptor(Display display, ImageDescriptor imageDescriptor, Animation animation, boolean isLooped) {
+    public DefaultAnimationDescriptor(Display display, ImageDescriptor imageDescriptor, Animation animation,
+                                      boolean isLooped, boolean doReturnBack) {
         this.display = display;
         this.imageDescriptor = imageDescriptor;
         this.animation = animation;
         this.isLooped = isLooped;
+        this.doReturnBack = doReturnBack;
     }
 
     @Override
@@ -36,5 +38,10 @@ public class DefaultAnimationDescriptor implements AnimationDescriptor {
     @Override
     public Display getDisplay() {
         return display;
+    }
+
+    @Override
+    public boolean doReturnBack() {
+        return doReturnBack;
     }
 }

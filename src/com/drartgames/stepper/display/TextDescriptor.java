@@ -12,4 +12,8 @@ public interface TextDescriptor extends Positionable, Scalable {
     void setScrollPosition(int scrollPosition);
 
     void setMessage(String message);
+
+    void setWordWrap(boolean wordWrap);
+
+    boolean isWordWrap();
 }

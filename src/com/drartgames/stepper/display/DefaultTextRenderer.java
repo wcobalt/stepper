@@ -28,10 +28,16 @@ public class DefaultTextRenderer extends BaseRenderer implements TextRenderer {
             Font renderFont = jFrameDisplay.getRenderFont();
 
             Graphics bg = bufferedImage.getGraphics();
-
             bg.setFont(renderFont);
 
-            java.util.List<String> lines = processLines(descriptor.getMessage(), renderFont, finalWidth);
+            java.util.List<String> lines;
+
+            if (descriptor.isWordWrap())
+                lines = processLines(descriptor.getMessage(), renderFont, finalWidth);
+            else {
+                lines = new ArrayList<>();
+                lines.add(descriptor.getMessage());
+            }
 
             renderText(bg, lines, renderFont, descriptor, finalHeight);
 
@@ -72,7 +78,7 @@ public class DefaultTextRenderer extends BaseRenderer implements TextRenderer {
                 case '-':
                 case '\n':
                 case '\t':
-                    Rectangle2D bounds = font.getStringBounds(currentWord, frc);
+                    Rectangle2D bounds = font.getStringBounds(" " + currentWord, frc);
 
                     int width = (int) (bounds.getWidth());
 
@@ -82,6 +88,7 @@ public class DefaultTextRenderer extends BaseRenderer implements TextRenderer {
                         lines.add(currentLine);
 
                         currentLine = currentWord;
+                        currentWidth = width;
                     } else
                         currentLine += " " + currentWord;
 
@@ -96,6 +103,7 @@ public class DefaultTextRenderer extends BaseRenderer implements TextRenderer {
             if (doBreakLine) {
                 lines.add(currentLine);
 
+                currentWidth = 0;
                 currentLine = "";
                 currentWord = "";
             }
@@ -113,6 +121,8 @@ public class DefaultTextRenderer extends BaseRenderer implements TextRenderer {
             else if (scrollOffset < 0)
                 scrollOffset = 0;
 
+            descriptor.setScrollPosition(scrollOffset);//@fixme that's not good
+
             g.setFont(font);
 
             //render
@@ -124,7 +134,7 @@ public class DefaultTextRenderer extends BaseRenderer implements TextRenderer {
 
                 g.drawString(lines.get(i), 0, y);
 
-                if (y > finalHeight)
+                if (y - lineHeight > finalHeight)
                     break;
             }
         }
