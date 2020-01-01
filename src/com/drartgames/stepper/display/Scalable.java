@@ -1,6 +1,6 @@
 package com.drartgames.stepper.display;
 
-public interface Scalable {
+public interface Scalable extends Descriptor {
     void setWidth(float width);
 
     void setHeight(float height);

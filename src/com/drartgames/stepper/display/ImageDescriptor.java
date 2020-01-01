@@ -1,11 +1,7 @@
 package com.drartgames.stepper.display;
 
-public interface ImageDescriptor extends Positionable {
-    float getWidth();
-
-    Display getDisplay();
-
+public interface ImageDescriptor extends Positionable, Scalable {
     Picture getPicture();
 
-    float setWidth(float width);
+    void setPicture(Picture picture);
 }

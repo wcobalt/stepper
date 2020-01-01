@@ -25,7 +25,7 @@ public class DefaultScriptLoaderFacade implements ScriptLoaderFacade {
     }
 
     @Override
-    public void load(SLInterpreter slInterpreter, File scenesDirectory) {
+    public void load(SLInterpreter slInterpreter, File scenesDirectory, ScriptsLoaderFacadeObserverWork work) {
         List<File> list = new ArrayList<>();
 
         if (scenesDirectory.exists() && scenesDirectory.isDirectory()) {
@@ -63,7 +63,11 @@ public class DefaultScriptLoaderFacade implements ScriptLoaderFacade {
                 }
             }
 
+            work.execute(ScriptsLoadingEvent.SCRIPTS_LOADED);
+
             slInterpreter.loadScenes(allScenes);
+
+            work.execute(ScriptsLoadingEvent.SCENES_LOADED);
         } else
             throw new IllegalArgumentException("Scenes directory either is not a directory or does not exist");
     }

@@ -282,20 +282,22 @@ public class DefaultStepperInitializer implements Initializer {
 
         ImageDescriptor splashScreenDescriptor = display.addPicture(splashScreen, 1.0f, 0.0f, 0.0f);
         ImageDescriptor loadingIconDescriptor = display.addPicture(loadingPicture, 0.04f, 0.94f, 0.9f);
-        TextDescriptor textDescriptor = display.addText("Loading", 0.1f, 1.0f, 0.85f, 0.92f);
-
-        InputDescriptor input = display.addInput(0.2f, 0.05f, 0.3f, 0.3f);
-        display.setActiveInput(input);
-
-        textDescriptor.setWordWrap(true);
-        display.setScrollableText(textDescriptor);
-
-        AnimationDescriptor descriptor = display.addAnimation(loadingIconDescriptor,
-                new SimpleAnimation(3000, 0.03f, false),
-                false, true);
+        TextDescriptor textDescriptor = display.addText("Загрузка скриптов", 0.1f, 1.0f, 0.83f, 0.92f);
 
         String pathToScenes = questsDirectory.getAbsolutePath() + "/" + questName + "/" + SCENES_PATH;
-        scriptLoaderFacade.load(interpreter, new File(pathToScenes));
+        scriptLoaderFacade.load(interpreter, new File(pathToScenes), (event) -> {
+            switch (event) {
+                case SCRIPTS_LOADED:
+                    textDescriptor.setMessage("Загрузка сцен");
+
+                    break;
+
+                case SCENES_LOADED:
+                    textDescriptor.setMessage("Запуск скриптов");
+
+                    break;
+            }
+        });
 
         display.awaitForKey(KeyEvent.VK_ENTER, (KeyAwaitDescriptor keyAwaitDescriptor) -> {
             Thread thread = new Thread(() -> {
@@ -307,9 +309,14 @@ public class DefaultStepperInitializer implements Initializer {
             });
 
             thread.start();
+
+            splashScreenDescriptor.setDoFree(true);
+            loadingIconDescriptor.setDoFree(true);
+            textDescriptor.setDoFree(true);
             keyAwaitDescriptor.setDoFree(true);
         });
 
+        //@todo make a fucking ability to localize the captions
         textDescriptor.setMessage("Нажмите ENTER");
     }
 

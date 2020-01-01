@@ -23,17 +23,6 @@ public class DefaultDisplay implements JFrameDisplay {
     private static final float FPS = 30;
     private static final Color BACKGROUND_COLOR = Color.BLACK;
 
-    private List<ImageDescriptor> images;
-    private List<AudioDescriptor> audios;
-    private List<AnimationDescriptor> animations;
-    private List<TextDescriptor> texts;
-    private List<InputDescriptor> inputs;
-
-    private List<KeyAwaitDescriptor> keyAwaiters;
-
-    private InputDescriptor activeInput;
-    private TextDescriptor activeScrollableText;
-
     private boolean isRunning;
 
     private ImageRenderer imageRenderer;
@@ -50,20 +39,37 @@ public class DefaultDisplay implements JFrameDisplay {
 
     private Font renderFont;
 
+    private DisplayState state, providedDisplayState = null;
+
+    private List<KeyEventEntry> keyEvents;
+
+    private class KeyEventEntry {
+        public final static int KEY_TYPE = 1, KEY_PRESS = 2, KEY_RELEASE = 3;
+
+        private KeyEvent keyEvent;
+        private int type;
+
+        public KeyEventEntry(int type, KeyEvent keyEvent) {
+            this.keyEvent = keyEvent;
+            this.type = type;
+        }
+
+        public KeyEvent getKeyEvent() {
+            return keyEvent;
+        }
+
+        public int getType() {
+            return type;
+        }
+    }
+
     public DefaultDisplay(String title, Initializer initializer) {
-        images = new ArrayList<>();
-        audios = new ArrayList<>();
-        animations = new ArrayList<>();
-        texts = new ArrayList<>();
-        inputs = new ArrayList<>();
-        keyAwaiters = new ArrayList<>();
+        state = new DefaultDisplayState();
 
         imageRenderer = new DefaultImageRenderer();
         textRenderer = new DefaultTextRenderer();
         inputRenderer = new DefaultInputRenderer();
-
-        activeInput = null;
-        activeScrollableText = null;
+        keyEvents = new ArrayList<>();
 
         frame = new JFrame(title);
 
@@ -74,7 +80,7 @@ public class DefaultDisplay implements JFrameDisplay {
     public ImageDescriptor addPicture(Picture picture, float width, float x, float y) {
         ImageDescriptor imageDescriptor = new DefaultImageDescriptor(this, picture, width, x, y);
 
-        images.add(imageDescriptor);
+        state.getImageDescriptors().add(imageDescriptor);
 
         return imageDescriptor;
     }
@@ -83,7 +89,7 @@ public class DefaultDisplay implements JFrameDisplay {
     public AudioDescriptor addAudio(Audio audio, boolean isLooped) {
         AudioDescriptor audioDescriptor = new DefaultAudioDescriptor(this, audio, isLooped);
 
-        audios.add(audioDescriptor);
+        state.getAudioDescriptors().add(audioDescriptor);
 
         return audioDescriptor;
     }
@@ -94,7 +100,7 @@ public class DefaultDisplay implements JFrameDisplay {
         AnimationDescriptor animationDescriptor = new DefaultAnimationDescriptor(this, imageDescriptor, animation,
                 isLooped, doReturnBack);
 
-        animations.add(animationDescriptor);
+        state.getAnimationDescriptors().add(animationDescriptor);
         animationDescriptor.getAnimation().setInitPos(imageDescriptor);
 
         return animationDescriptor;
@@ -104,7 +110,7 @@ public class DefaultDisplay implements JFrameDisplay {
     public TextDescriptor addText(String message, float width, float height, float x, float y) {
         TextDescriptor textDescriptor = new DefaultTextDescriptor(this, message, width, height, x, y);
 
-        texts.add(textDescriptor);
+        state.getTextDescriptors().add(textDescriptor);
 
         return textDescriptor;
     }
@@ -113,38 +119,18 @@ public class DefaultDisplay implements JFrameDisplay {
     public InputDescriptor addInput(float width, float height, float x, float y) {
         InputDescriptor inputDescriptor = new DefaultInputDescriptor(this, width, height, x, y);
 
-        inputs.add(inputDescriptor);
+        state.getInputDescriptors().add(inputDescriptor);
 
         return inputDescriptor;
     }
 
     @Override
-    public void setScrollableText(TextDescriptor textDescriptor) {
-        activeScrollableText = textDescriptor;
-    }
-
-    @Override
-    public void setActiveInput(InputDescriptor inputDescriptor) {
-        activeInput = inputDescriptor;
-    }
-
-    @Override
     public KeyAwaitDescriptor awaitForKey(int key, KeyAwaitWork keyAwaitWork) {
-        KeyAwaitDescriptor keyAwaiterDescriptor = new DefaultKeyAwaitDescriptor(key, keyAwaitWork);
+        KeyAwaitDescriptor keyAwaiterDescriptor = new DefaultKeyAwaitDescriptor(this, key, keyAwaitWork);
 
-        keyAwaiters.add(keyAwaiterDescriptor);
+        state.getKeyAwaitDescriptors().add(keyAwaiterDescriptor);
 
         return keyAwaiterDescriptor;
-    }
-
-    @Override
-    public TextDescriptor getScrollableText() {
-        return activeScrollableText;
-    }
-
-    @Override
-    public InputDescriptor getActiveInput() {
-        return activeInput;
     }
 
     @Override
@@ -229,17 +215,17 @@ public class DefaultDisplay implements JFrameDisplay {
         frame.addKeyListener(new KeyAdapter() {
             @Override
             public void keyTyped(KeyEvent e) {
-                handleKeyType(e);
+                keyEvents.add(new KeyEventEntry(KeyEventEntry.KEY_TYPE, e));
             }
 
             @Override
             public void keyReleased(KeyEvent e) {
-                handleKeyRelease(e);
+                keyEvents.add(new KeyEventEntry(KeyEventEntry.KEY_RELEASE, e));
             }
 
             @Override
             public void keyPressed(KeyEvent e) {
-                handleKeyPress(e);
+                keyEvents.add(new KeyEventEntry(KeyEventEntry.KEY_PRESS, e));
             }
         });
     }
@@ -256,6 +242,7 @@ public class DefaultDisplay implements JFrameDisplay {
                 long begin = System.currentTimeMillis();
 
                 handleAudios();
+                handleKeys();
 
                 long currentTimestamp = System.currentTimeMillis();
 
@@ -270,6 +257,12 @@ public class DefaultDisplay implements JFrameDisplay {
                 renderInputs();
 
                 swapBuffers();
+
+                if (providedDisplayState != null) {
+                    state = providedDisplayState;
+
+                    providedDisplayState = null;
+                }
 
                 long delay = System.currentTimeMillis() - begin;
                 long sleepFor = (int) (1000 / FPS) - delay;
@@ -300,7 +293,31 @@ public class DefaultDisplay implements JFrameDisplay {
         isRunning = false;
     }
 
+    private void handleKeys() {
+        for (KeyEventEntry entry : keyEvents) {
+            switch (entry.getType()) {
+                case KeyEventEntry.KEY_TYPE:
+                    handleKeyType(entry.getKeyEvent());
+
+                    break;
+
+                case KeyEventEntry.KEY_PRESS:
+                    handleKeyPress(entry.getKeyEvent());
+
+                    break;
+
+                case KeyEventEntry.KEY_RELEASE:
+                    handleKeyRelease(entry.getKeyEvent());
+
+                    break;
+            }
+        }
+
+        keyEvents.clear();
+    }
+
     private void handleKeyType(KeyEvent keyEvent) {
+        InputDescriptor activeInput = state.getActiveInput();
         char typed = keyEvent.getKeyChar();
 
         if (typed != KeyEvent.CHAR_UNDEFINED && typed != KeyEvent.VK_BACK_SPACE && activeInput != null) {
@@ -309,6 +326,8 @@ public class DefaultDisplay implements JFrameDisplay {
     }
 
     private void handleKeyPress(KeyEvent keyEvent) {
+        InputDescriptor activeInput = state.getActiveInput();
+
         if (keyEvent.getKeyCode() == KeyEvent.VK_BACK_SPACE && activeInput != null) {
             String text = activeInput.getCurrentText();
 
@@ -318,6 +337,8 @@ public class DefaultDisplay implements JFrameDisplay {
     }
 
     private void handleKeyRelease(KeyEvent keyEvent) {
+        TextDescriptor activeScrollableText = state.getActiveScrollableText();
+
         int keyCode = keyEvent.getKeyCode();
 
         if (keyEvent.isActionKey()) {
@@ -339,7 +360,7 @@ public class DefaultDisplay implements JFrameDisplay {
                 activeScrollableText.setScrollPosition(activeScrollableText.getScrollPosition() + scroll);
         }
 
-        Iterator<KeyAwaitDescriptor> iterator = keyAwaiters.iterator();
+        Iterator<KeyAwaitDescriptor> iterator = state.getKeyAwaitDescriptors().iterator();
 
         while (iterator.hasNext()) {
             KeyAwaitDescriptor descriptor = iterator.next();
@@ -354,13 +375,18 @@ public class DefaultDisplay implements JFrameDisplay {
     }
 
     private void handleAudios() {
-        for (AudioDescriptor descriptor : audios) {
-            //@todo
+        Iterator<AudioDescriptor> iterator = state.getAudioDescriptors().iterator();
+
+        while (iterator.hasNext()) {
+            AudioDescriptor descriptor = iterator.next();
+
+            if (descriptor.doFree())
+                iterator.remove();
         }
     }
 
     private void handleAnimations(long deltaTime) {
-        Iterator<AnimationDescriptor> iterator = animations.iterator();
+        Iterator<AnimationDescriptor> iterator = state.getAnimationDescriptors().iterator();
 
         while (iterator.hasNext()) {
             AnimationDescriptor descriptor = iterator.next();
@@ -381,20 +407,41 @@ public class DefaultDisplay implements JFrameDisplay {
     }
 
     private void renderImages() {
-        for (ImageDescriptor descriptor : images) {
+        Iterator<ImageDescriptor> iterator = state.getImageDescriptors().iterator();
+
+        while (iterator.hasNext()) {
+            ImageDescriptor descriptor = iterator.next();
+
             imageRenderer.render(descriptor);
+
+            if (descriptor.doFree())
+                iterator.remove();
         }
     }
 
     private void renderTexts() {
-        for (TextDescriptor descriptor : texts) {
+        Iterator<TextDescriptor> iterator = state.getTextDescriptors().iterator();
+
+        while (iterator.hasNext()) {
+            TextDescriptor descriptor = iterator.next();
+
             textRenderer.render(descriptor);
+
+            if (descriptor.doFree())
+                iterator.remove();
         }
     }
 
     private void renderInputs() {
-        for (InputDescriptor descriptor : inputs) {
+        Iterator<InputDescriptor> iterator = state.getInputDescriptors().iterator();
+
+        while (iterator.hasNext()) {
+            InputDescriptor descriptor = iterator.next();
+
             inputRenderer.render(descriptor);
+
+            if (descriptor.doFree())
+                iterator.remove();
         }
     }
 
@@ -437,5 +484,15 @@ public class DefaultDisplay implements JFrameDisplay {
     @Override
     public Font getRenderFont() {
         return renderFont;
+    }
+
+    @Override
+    public DisplayState getDisplayState() {
+        return state;
+    }
+
+    @Override
+    public void provideDisplayState(DisplayState displayState) {
+        providedDisplayState = displayState;
     }
 }
