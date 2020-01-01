@@ -15,15 +15,7 @@ public interface Display {
 
     InputDescriptor addInput(float width, float height, float x, float y);
 
-    void setScrollableText(TextDescriptor textDescriptor);
-
-    void setActiveInput(InputDescriptor inputDescriptor);
-
     KeyAwaitDescriptor awaitForKey(int key, KeyAwaitWork keyAwaitWork);
-
-    TextDescriptor getScrollableText();
-
-    InputDescriptor getActiveInput();
 
     void run();
 
@@ -34,4 +26,8 @@ public interface Display {
     Initializer getInitializer();
 
     Dimension getRenderResolution();
+
+    DisplayState getDisplayState();
+
+    void provideDisplayState(DisplayState displayState);
 }

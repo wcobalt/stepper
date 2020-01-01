@@ -35,4 +35,5 @@ public interface Initializer {
     ScriptLoaderFacade getScriptLoaderFacade();
 
     Display getDisplay();
+
 }

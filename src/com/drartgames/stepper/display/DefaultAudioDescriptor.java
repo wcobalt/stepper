@@ -1,12 +1,12 @@
 package com.drartgames.stepper.display;
 
-public class DefaultAudioDescriptor implements AudioDescriptor {
+public class DefaultAudioDescriptor extends BaseDescriptor implements AudioDescriptor {
     private Audio audio;
-    private Display display;
     private boolean isLooped;
 
     public DefaultAudioDescriptor(Display display, Audio audio, boolean isLooped) {
-        this.display = display;
+        super(display);
+
         this.audio = audio;
         this.isLooped = isLooped;
     }
@@ -14,11 +14,6 @@ public class DefaultAudioDescriptor implements AudioDescriptor {
     @Override
     public Audio getAudio() {
         return audio;
-    }
-
-    @Override
-    public Display getDisplay() {
-        return display;
     }
 
     @Override

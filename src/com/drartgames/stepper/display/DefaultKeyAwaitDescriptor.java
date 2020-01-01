@@ -1,15 +1,14 @@
 package com.drartgames.stepper.display;
 
-public class DefaultKeyAwaitDescriptor implements KeyAwaitDescriptor {
+public class DefaultKeyAwaitDescriptor extends BaseDescriptor implements KeyAwaitDescriptor {
     private KeyAwaitWork keyAwaitWork;
     private int key;
-    private boolean doFree;
 
-    public DefaultKeyAwaitDescriptor(int key, KeyAwaitWork keyAwaitWork) {
+    public DefaultKeyAwaitDescriptor(Display display, int key, KeyAwaitWork keyAwaitWork) {
+        super(display);
+
         this.key = key;
         this.keyAwaitWork = keyAwaitWork;
-
-        this.doFree = false;
     }
 
     @Override
@@ -20,15 +19,5 @@ public class DefaultKeyAwaitDescriptor implements KeyAwaitDescriptor {
     @Override
     public int getKey() {
         return key;
-    }
-
-    @Override
-    public boolean doFree() {
-        return doFree;
-    }
-
-    @Override
-    public void setDoFree(boolean doFree) {
-        this.doFree = doFree;
     }
 }

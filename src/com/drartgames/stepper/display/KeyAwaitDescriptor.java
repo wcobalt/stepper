@@ -1,11 +1,7 @@
 package com.drartgames.stepper.display;
 
-public interface KeyAwaitDescriptor {
+public interface KeyAwaitDescriptor extends Descriptor {
     KeyAwaitWork getWork();
 
     int getKey();
-
-    boolean doFree();
-
-    void setDoFree(boolean doFree);
 }

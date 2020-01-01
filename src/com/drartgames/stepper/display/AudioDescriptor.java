@@ -1,9 +1,7 @@
 package com.drartgames.stepper.display;
 
-public interface AudioDescriptor {
+public interface AudioDescriptor extends Descriptor {
     Audio getAudio();
-
-    Display getDisplay();
 
     boolean isLooped();
 

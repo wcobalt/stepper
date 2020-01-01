@@ -1,6 +1,6 @@
 package com.drartgames.stepper.display;
 
-public interface AnimationDescriptor {
+public interface AnimationDescriptor extends Descriptor {
     ImageDescriptor getImageDescriptor();
 
     Animation getAnimation();
@@ -10,6 +10,4 @@ public interface AnimationDescriptor {
     void setIsLooped(boolean isLooped);
 
     boolean doReturnBack();
-
-    Display getDisplay();
 }

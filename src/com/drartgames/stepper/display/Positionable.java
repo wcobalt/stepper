@@ -1,6 +1,6 @@
 package com.drartgames.stepper.display;
 
-public interface Positionable {
+public interface Positionable extends Descriptor {
     void setX(float x);
 
     void setY(float y);
