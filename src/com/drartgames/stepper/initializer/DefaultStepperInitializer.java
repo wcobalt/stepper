@@ -3,11 +3,13 @@ package com.drartgames.stepper.initializer;
 import com.drartgames.stepper.*;
 import com.drartgames.stepper.display.*;
 import com.drartgames.stepper.exceptions.NoInitSceneException;
+import com.drartgames.stepper.exceptions.SLRuntimeException;
 import com.drartgames.stepper.exceptions.SLVersionMismatchException;
 import com.drartgames.stepper.sl.DefaultSLInterpreter;
-import com.drartgames.stepper.sl.DefaultScriptLoaderFacade;
+import com.drartgames.stepper.sl.analyzer.DefaultScriptLoaderFacade;
 import com.drartgames.stepper.sl.SLInterpreter;
-import com.drartgames.stepper.sl.ScriptLoaderFacade;
+import com.drartgames.stepper.sl.analyzer.ScriptLoaderFacade;
+import com.drartgames.stepper.sl.lang.Scene;
 
 import java.awt.event.KeyEvent;
 import java.io.File;
@@ -222,7 +224,7 @@ public class DefaultStepperInitializer implements Initializer {
 
             for (ParameterHandler handler : parametersHandlers) {
                 if (parameter.equals(handler.getParameter()) ||
-                   (handler.hasAlias() && parameter.equals(handler.getParameterAlias()))) {
+                        (handler.hasAlias() && parameter.equals(handler.getParameterAlias()))) {
 
                     String arg = "";
 
@@ -256,7 +258,10 @@ public class DefaultStepperInitializer implements Initializer {
             return;
         }
 
-        interpreter = new DefaultSLInterpreter();
+        display = new DefaultDisplay(manifest.getQuestName(), this);
+        display.initialize();
+
+        interpreter = new DefaultSLInterpreter(display);
 
         if (!interpreter.getSLVersion().isHigherOrEqualThan(manifest.getRequiredSLVersion())) {
             throw new SLVersionMismatchException("Required by " + questName + " SL version (" +
@@ -265,8 +270,6 @@ public class DefaultStepperInitializer implements Initializer {
         }
 
         scriptLoaderFacade = new DefaultScriptLoaderFacade();
-        display = new DefaultDisplay(manifest.getQuestName(), this);
-        display.initialize();
 
         try {
             splashScreen = new DefaultPicture(SPLASH_SCREEN_PATH);
@@ -293,22 +296,21 @@ public class DefaultStepperInitializer implements Initializer {
                     break;
 
                 case SCENES_LOADED:
-                    textDescriptor.setMessage("Запуск скриптов");
+                    textDescriptor.setMessage("Загрузка ресурсов");
 
                     break;
             }
         });
 
-        display.awaitForKey(KeyEvent.VK_ENTER, (KeyAwaitDescriptor keyAwaitDescriptor) -> {
-            Thread thread = new Thread(() -> {
-                try {
-                    interpreter.run();
-                } catch (NoInitSceneException exc) {
-                    logger.log(Level.SEVERE, "There's no loaded init scene", exc);
-                }
-            });
+        //init all the scenes
+        try {
+            interpreter.initialize();
+        } catch (SLRuntimeException exc) {
+            logger.log(Level.SEVERE, "Runtime error when scenes initialization", exc);
+        }
 
-            thread.start();
+        display.awaitForKey(KeyEvent.VK_ENTER, (KeyAwaitDescriptor keyAwaitDescriptor) -> {
+            runInterpreter(interpreter);
 
             splashScreenDescriptor.setDoFree(true);
             loadingIconDescriptor.setDoFree(true);
@@ -318,6 +320,21 @@ public class DefaultStepperInitializer implements Initializer {
 
         //@todo make a fucking ability to localize the captions
         textDescriptor.setMessage("Нажмите ENTER");
+    }
+
+    private void runInterpreter(SLInterpreter slInterpreter) {
+        Scene scene = slInterpreter.getScenesManager().getSceneByName(manifest.getInitSceneName());
+        try {
+            slInterpreter.getScenesManager().setInitScene(scene);
+        } catch (NoInitSceneException exc) {
+            logger.log(Level.SEVERE, "Unable to set init scene. Check its name in manifest.", exc);
+        }
+
+        try {
+            slInterpreter.run();
+        } catch (SLRuntimeException exc) {
+            logger.log(Level.SEVERE, "Runtime SL exception: ", exc);
+        }
     }
 
     @Override

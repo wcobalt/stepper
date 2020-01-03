@@ -5,10 +5,11 @@ import java.awt.image.BufferedImage;
 
 public class DefaultDisplayToolkit implements DisplayToolkit {
     private Display display;
-
     private DisplayToolkitState state;
 
     private Picture defaultPicture;
+
+    private InputWork inputWork;
 
     public DefaultDisplayToolkit(Display display) {
         this.display = display;
@@ -24,18 +25,25 @@ public class DefaultDisplayToolkit implements DisplayToolkit {
 
     @Override
     public void init(InputWork inputWork) {
+        this.inputWork = inputWork;
+
+        state = makeNewState();
+    }
+
+    @Override
+    public void setState(DisplayToolkitState state) {
+        this.state = state;
+    }
+
+    @Override
+    public DisplayToolkitState makeNewState() {
         ImageDescriptor backgroundImage = display.addPicture(defaultPicture, 1.0f, 0.0f, 0.0f);
         TextDescriptor mainText = display.addText("", 1.0f, 0.28f, 0.0f, 0.7f);
         mainText.setWordWrap(true);
 
         InputDescriptor mainInput = display.addInput(1.0f, 0.02f, 0.0f, 0.98f);
 
-        state = new DefaultDisplayToolkitState(backgroundImage, mainText, mainInput, inputWork);
-    }
-
-    @Override
-    public void setState(DisplayToolkitState state) {
-        this.state = state;
+        return new DefaultDisplayToolkitState(backgroundImage, mainText, mainInput, inputWork);
     }
 
     @Override

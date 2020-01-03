@@ -1,4 +1,6 @@
-package com.drartgames.stepper.sl;
+package com.drartgames.stepper.sl.analyzer;
+
+import com.drartgames.stepper.sl.SLInterpreter;
 
 import java.io.File;
 

@@ -29,5 +29,5 @@ public interface Display {
 
     DisplayState getDisplayState();
 
-    void provideDisplayState(DisplayState displayState);
+    void provideDisplayState(DisplayState displayState, Work changeWork);
 }

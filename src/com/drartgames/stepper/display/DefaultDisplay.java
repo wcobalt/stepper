@@ -40,8 +40,10 @@ public class DefaultDisplay implements JFrameDisplay {
     private Font renderFont;
 
     private DisplayState state, providedDisplayState = null;
+    private Work stateSwapWork;
 
     private List<KeyEventEntry> keyEvents;
+
 
     private class KeyEventEntry {
         public final static int KEY_TYPE = 1, KEY_PRESS = 2, KEY_RELEASE = 3;
@@ -261,7 +263,11 @@ public class DefaultDisplay implements JFrameDisplay {
                 if (providedDisplayState != null) {
                     state = providedDisplayState;
 
+                    if (stateSwapWork != null)
+                        stateSwapWork.execute();
+
                     providedDisplayState = null;
+                    stateSwapWork = null;
                 }
 
                 long delay = System.currentTimeMillis() - begin;
@@ -492,7 +498,8 @@ public class DefaultDisplay implements JFrameDisplay {
     }
 
     @Override
-    public void provideDisplayState(DisplayState displayState) {
+    public void provideDisplayState(DisplayState displayState, Work changeWork) {
         providedDisplayState = displayState;
+        stateSwapWork = changeWork;
     }
 }

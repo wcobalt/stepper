@@ -1,7 +1,8 @@
-package com.drartgames.stepper.sl;
+package com.drartgames.stepper.sl.analyzer;
 
 import com.drartgames.stepper.exceptions.AnalysisException;
 import com.drartgames.stepper.exceptions.ParseException;
+import com.drartgames.stepper.sl.SLInterpreter;
 import com.drartgames.stepper.sl.lang.Scene;
 import com.drartgames.stepper.utils.DefaultFileService;
 import com.drartgames.stepper.utils.FileService;
@@ -65,7 +66,7 @@ public class DefaultScriptLoaderFacade implements ScriptLoaderFacade {
 
             work.execute(ScriptsLoadingEvent.SCRIPTS_LOADED);
 
-            slInterpreter.loadScenes(allScenes);
+            slInterpreter.getScenesManager().getScenes().addAll(allScenes);
 
             work.execute(ScriptsLoadingEvent.SCENES_LOADED);
         } else

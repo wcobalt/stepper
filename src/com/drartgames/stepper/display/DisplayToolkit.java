@@ -9,6 +9,8 @@ public interface DisplayToolkit {
 
     DisplayToolkitState getState();
 
+    DisplayToolkitState makeNewState();
+
     void showMessage(String message, Picture picture);
 
     void showPrompt(String message, Picture picture, InputWork inputWork);
