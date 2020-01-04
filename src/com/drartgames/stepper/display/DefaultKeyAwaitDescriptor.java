@@ -20,4 +20,9 @@ public class DefaultKeyAwaitDescriptor extends BaseDescriptor implements KeyAwai
     public int getKey() {
         return key;
     }
+
+    @Override
+    public String toString() {
+        return "K: " + key;
+    }
 }

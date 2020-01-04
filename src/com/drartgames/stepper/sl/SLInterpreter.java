@@ -2,6 +2,7 @@ package com.drartgames.stepper.sl;
 
 import com.drartgames.stepper.Version;
 import com.drartgames.stepper.display.Display;
+import com.drartgames.stepper.display.DisplayToolkit;
 import com.drartgames.stepper.exceptions.SLRuntimeException;
 import com.drartgames.stepper.sl.lang.Action;
 import com.drartgames.stepper.sl.lang.Operator;
@@ -30,7 +31,11 @@ public interface SLInterpreter {
 
     Manager<Tag> getTagsManager();
 
+    Operator getCurrentOperator();
+
     boolean isFlagSet(int flag);
 
     void setFlag(int flag, boolean value);
+
+    DisplayToolkit getToolkit();
 }

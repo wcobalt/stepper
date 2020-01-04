@@ -26,21 +26,21 @@ public class DefaultValue implements Value {
 
     @Override
     public ValueType getValueType() {
-        return null;
+        return valueType;
     }
 
     @Override
     public String getStringValue() {
-        return null;
+        return stringValue;
     }
 
     @Override
     public int getNumericValue() {
-        return 0;
+        return numericValue;
     }
 
     @Override
     public GeneralLiteral getGeneralLiteralValue() {
-        return null;
+        return generalLiteralValue;
     }
 }

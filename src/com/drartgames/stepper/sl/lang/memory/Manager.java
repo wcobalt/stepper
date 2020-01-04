@@ -10,4 +10,6 @@ public interface Manager<T extends Entity> {
     boolean remove(String name);
 
     List<T> getAll();
+
+    T getByName(String name);
 }

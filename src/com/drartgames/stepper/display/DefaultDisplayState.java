@@ -10,6 +10,7 @@ public class DefaultDisplayState implements DisplayState {
     private List<TextDescriptor> texts;
     private List<InputDescriptor> inputs;
     private List<KeyAwaitDescriptor> keyAwaiters;
+    private List<PostWorkDescriptor> works;
 
     private InputDescriptor activeInput;
     private TextDescriptor activeScrollableText;
@@ -21,6 +22,7 @@ public class DefaultDisplayState implements DisplayState {
         texts = new ArrayList<>();
         inputs = new ArrayList<>();
         keyAwaiters = new ArrayList<>();
+        works = new ArrayList<>();
 
         activeInput = null;
         activeScrollableText = null;
@@ -54,6 +56,11 @@ public class DefaultDisplayState implements DisplayState {
     @Override
     public List<AudioDescriptor> getAudioDescriptors() {
         return audios;
+    }
+
+    @Override
+    public List<PostWorkDescriptor> getWorkDescriptors() {
+        return works;
     }
 
     @Override

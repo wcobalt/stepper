@@ -1,8 +1,8 @@
 package com.drartgames.stepper.display;
 
-import javax.swing.*;
+import java.util.List;
 
-public interface TextDescriptor extends Positionable, Scalable {
+public interface TextDescriptor extends FigureDescriptor {
     String getMessage();
 
     int getScrollPosition();
@@ -14,4 +14,6 @@ public interface TextDescriptor extends Positionable, Scalable {
     void setWordWrap(boolean wordWrap);
 
     boolean isWordWrap();
+
+    List<String> getLines();
 }

@@ -39,4 +39,9 @@ public class DefaultAnimationDescriptor extends BaseDescriptor implements Animat
     public boolean doReturnBack() {
         return doReturnBack;
     }
+
+    @Override
+    public String toString() {
+        return "L: " + isLooped + " R: " + doReturnBack + " I:\n   " + imageDescriptor.toString();
+    }
 }

@@ -6,6 +6,7 @@ import com.drartgames.stepper.display.*;
 import com.drartgames.stepper.exceptions.SLRuntimeException;
 import com.drartgames.stepper.sl.lang.Action;
 import com.drartgames.stepper.sl.lang.Operator;
+import com.drartgames.stepper.sl.lang.memory.Dialog;
 import com.drartgames.stepper.sl.processors.*;
 import com.drartgames.stepper.sl.lang.Scene;
 import com.drartgames.stepper.sl.lang.memory.DefaultManager;
@@ -13,13 +14,18 @@ import com.drartgames.stepper.sl.lang.memory.Manager;
 import com.drartgames.stepper.sl.lang.memory.Tag;
 
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class DefaultSLInterpreter implements SLInterpreter {
-    private Version version;
+    private static final Logger logger = Logger.getLogger(DefaultSLInterpreter.class.getName());
+
+    public static final Version SL_VERSION = new DefaultVersion("1.0.0:0");;
     private Display display;
     private DisplayToolkit toolkit;
     private ScenesManager scenesManager;
     private Manager<Tag> tagsManager;
+    private Operator currentOperator;
 
     private Map<Integer, OperatorProcessor> processors;
 
@@ -27,6 +33,7 @@ public class DefaultSLInterpreter implements SLInterpreter {
     public static final String FIRST_COME_ACTION_NAME = "first_come";
 
     public static final int IMMEDIATE_RETURN_FLAG = 0x1;
+    public static final float MATCH_THRESHOLD = 0.2f;
 
     private Set<Integer> flags;
 
@@ -57,7 +64,6 @@ public class DefaultSLInterpreter implements SLInterpreter {
     private Map<Scene, SceneCacheEntry> sceneCache;
 
     public DefaultSLInterpreter(Display display) {
-        version = new DefaultVersion("1.0.0:0");
         scenesManager = new DefaultScenesManager();
         tagsManager = new DefaultManager<>();
 
@@ -94,7 +100,7 @@ public class DefaultSLInterpreter implements SLInterpreter {
 
     @Override
     public Version getSLVersion() {
-        return version;
+        return SL_VERSION;
     }
 
     @Override
@@ -111,6 +117,7 @@ public class DefaultSLInterpreter implements SLInterpreter {
 
     @Override
     public void initialize() throws SLRuntimeException {
+        //@fixme maybe split into two methods: load/initScenes and init (just interpreter) i dunno
         Iterator<Scene> iterator = scenesManager.getScenes().iterator();
 
         while (iterator.hasNext()) {
@@ -123,6 +130,35 @@ public class DefaultSLInterpreter implements SLInterpreter {
         }
 
         scenesManager.setCurrentScene(null);
+        toolkit.initialize(this::handleInput);
+    }
+
+    private void handleInput(String input) {
+        List<Dialog> dialogs = scenesManager.getCurrentScene().getDialogsManager().getAll();
+
+        Dialog mostMatched = null;
+        float maxMatch = 0.0f;
+
+        for (Dialog dialog : dialogs) {
+            if (dialog.isEnabled()) {
+                float match = dialog.matches(input);
+
+                if (match > maxMatch) {
+                    mostMatched = dialog;
+                    maxMatch = match;
+                }
+            }
+        }
+
+        if (maxMatch > MATCH_THRESHOLD) {
+            Action action = mostMatched.getDialogAction();
+
+            try {
+                executeAction(action);
+            } catch (SLRuntimeException exc) {
+                logger.log(Level.SEVERE, "Runtime exception when executing dialog action `" + action.getName() + "`:", exc);
+            }
+        }
     }
 
     @Override
@@ -140,10 +176,14 @@ public class DefaultSLInterpreter implements SLInterpreter {
         while (iterator.hasNext() && !isFlagSet(IMMEDIATE_RETURN_FLAG)) {
             Operator operator = iterator.next();
 
+            currentOperator = operator;
+
             OperatorProcessor processor = processors.get(operator.getOperatorId());
 
             processor.execute(this, operator);
         }
+
+        currentOperator = null;
     }
 
     @Override
@@ -154,30 +194,43 @@ public class DefaultSLInterpreter implements SLInterpreter {
 
         SceneCacheEntry cacheEntry = sceneCache.get(scene);
 
-        DisplayState newDisplayState;
-        DisplayToolkitState newDisplayToolkitState;
-
         if (cacheEntry != null) {
-            newDisplayState = cacheEntry.getDisplayState();
-            newDisplayToolkitState = cacheEntry.getToolkitState();
+            DisplayState newDisplayState = cacheEntry.getDisplayState();
+            DisplayToolkitState newDisplayToolkitState = cacheEntry.getToolkitState();
+
+            display.provideDisplayState(newDisplayState, () -> toolkit.setState(newDisplayToolkitState));
         } else {
-            newDisplayState = new DefaultDisplayState();
-            newDisplayToolkitState = toolkit.makeNewState();
+            DisplayState newDisplayState = new DefaultDisplayState();
 
             //add to cache
-            SceneCacheEntry newCacheEntry = new SceneCacheEntry(scene, display.getDisplayState(),
-                    toolkit.getState());
+            display.provideDisplayState(newDisplayState, () -> {
+                toolkit.setState(toolkit.makeNewState());
 
-            sceneCache.put(scene, newCacheEntry);
+                statesSwapEnd(scene);
+
+                Action firstCome = scene.getActionByName(FIRST_COME_ACTION_NAME);
+
+                try {
+                    executeAction(firstCome);
+                } catch (SLRuntimeException exc) {
+                    logger.log(Level.SEVERE, "Runtime exception, when executing `" + firstCome.getName() + "` action", exc);
+                }
+            });
         }
+    }
 
-        display.provideDisplayState(newDisplayState, () -> toolkit.setState(newDisplayToolkitState));
+    private void statesSwapEnd(Scene scene) {
+        SceneCacheEntry newCacheEntry = new SceneCacheEntry(scene, display.getDisplayState(),
+                toolkit.getState());
+
+        sceneCache.put(scene, newCacheEntry);
 
         scenesManager.setCurrentScene(scene);
+    }
 
-        Action firstCome = scene.getActionByName(FIRST_COME_ACTION_NAME);
-
-        executeAction(firstCome);
+    @Override
+    public Operator getCurrentOperator() {
+        return currentOperator;
     }
 
     @Override
@@ -201,5 +254,10 @@ public class DefaultSLInterpreter implements SLInterpreter {
             flags.add(flag);
         else
             flags.remove(flag);
+    }
+
+    @Override
+    public DisplayToolkit getToolkit() {
+        return toolkit;
     }
 }

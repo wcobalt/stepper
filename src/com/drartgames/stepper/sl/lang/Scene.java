@@ -16,7 +16,7 @@ public interface Scene {
 
     Manager<Counter> getCountersManager();
 
-    Manager<AudioResource> getAudioResourcesManager();
+    Manager<AudioResource> getAudioResourceManager();
 
     Manager<PictureResource> getPictureResourceManager();
 }

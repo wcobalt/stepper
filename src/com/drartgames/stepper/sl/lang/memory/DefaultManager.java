@@ -55,4 +55,14 @@ public class DefaultManager<T extends Entity> implements Manager<T> {
     public List<T> getAll() {
         return entities;
     }
+
+    @Override
+    public T getByName(String name) {
+        for (T t : entities) {
+            if (t.getName().equals(name))
+                return t;
+        }
+
+        return null;
+    }
 }

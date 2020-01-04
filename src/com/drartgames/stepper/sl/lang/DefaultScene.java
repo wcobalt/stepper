@@ -53,7 +53,7 @@ public class DefaultScene implements Scene {
     }
 
     @Override
-    public Manager<AudioResource> getAudioResourcesManager() {
+    public Manager<AudioResource> getAudioResourceManager() {
         return audioResourcesManager;
     }
 
