@@ -122,11 +122,11 @@ public class DefaultSLInterpreter implements SLInterpreter {
 
         while (iterator.hasNext()) {
             Scene scene = iterator.next();
-            Action firstCome = scene.getActionByName(INIT_ACTION_NAME);
+            Action init = scene.getActionByName(INIT_ACTION_NAME);
 
             scenesManager.setCurrentScene(scene);
 
-            executeAction(firstCome);
+            executeAction(init);
         }
 
         scenesManager.setCurrentScene(null);
@@ -139,9 +139,11 @@ public class DefaultSLInterpreter implements SLInterpreter {
         Dialog mostMatched = null;
         float maxMatch = 0.0f;
 
+        String clearInput = input.trim().replaceAll("\\s", " ").toLowerCase();
+
         for (Dialog dialog : dialogs) {
             if (dialog.isEnabled()) {
-                float match = dialog.matches(input);
+                float match = dialog.matches(clearInput);
 
                 if (match > maxMatch) {
                     mostMatched = dialog;

@@ -42,6 +42,8 @@ public class DefaultStepperInitializer implements Initializer {
     private ScriptLoaderFacade scriptLoaderFacade;
     private Picture splashScreen, loadingPicture;
 
+    private File questDirectory;
+
     private class HelpParameterHandler implements ParameterHandler {
         private String HELP = "--help";
         private String HELP_SHORT = "-h";
@@ -257,8 +259,10 @@ public class DefaultStepperInitializer implements Initializer {
 
         ManifestLoader manifestLoader = new DefaultManifestLoader();
 
+        questDirectory = new File(questsDirectory.getAbsolutePath() + "/" + questName);
+
         try {
-            String manifestFile = questsDirectory.getAbsolutePath() + "/" + questName + "/" + MANIFEST_FILE_NAME;
+            String manifestFile = questDirectory.getAbsolutePath() + "/" + MANIFEST_FILE_NAME;
             manifest = manifestLoader.loadManifest(new File(manifestFile));
         } catch (IOException exc) {
             logger.log(Level.SEVERE, "Unable to read content from " + MANIFEST_FILE_NAME, exc);
@@ -484,6 +488,11 @@ public class DefaultStepperInitializer implements Initializer {
     @Override
     public File getQuestsDirectory() {
         return questsDirectory;
+    }
+
+    @Override
+    public File getQuestDirectory() {
+        return questDirectory;
     }
 
     @Override

@@ -26,6 +26,8 @@ public interface Initializer {
 
     SLInterpreter getInterpreter();
 
+    File getQuestDirectory();
+
     String getCurrentQuestName();
 
     File getQuestsDirectory();
