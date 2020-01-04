@@ -1,4 +1,4 @@
-package com.drartgames.stepper.sl;
+package com.drartgames.stepper.sl.analyzer;
 
 import com.drartgames.stepper.exceptions.AnalysisException;
 import com.drartgames.stepper.exceptions.ParseException;

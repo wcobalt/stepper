@@ -25,4 +25,9 @@ public class DefaultAudioDescriptor extends BaseDescriptor implements AudioDescr
     public void setIsLooped(boolean isLooped) {
         this.isLooped = isLooped;
     }
+
+    @Override
+    public String toString() {
+        return "L: " + isLooped;
+    }
 }

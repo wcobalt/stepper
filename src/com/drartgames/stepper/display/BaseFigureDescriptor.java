@@ -1,7 +1,8 @@
 package com.drartgames.stepper.display;
 
-public class BaseFigureDescriptor extends BaseDescriptor implements Scalable, Positionable {
+public class BaseFigureDescriptor extends BaseDescriptor implements FigureDescriptor {
     private float width, height, x, y;
+    private boolean isVisible;
 
     public BaseFigureDescriptor(Display display, float x, float y, float width, float height) {
         super(display);
@@ -10,6 +11,8 @@ public class BaseFigureDescriptor extends BaseDescriptor implements Scalable, Po
         this.height = height;
         this.x = x;
         this.y = y;
+
+        isVisible = true;
     }
 
     @Override
@@ -50,5 +53,20 @@ public class BaseFigureDescriptor extends BaseDescriptor implements Scalable, Po
     @Override
     public void setHeight(float height) {
         this.height = height;
+    }
+
+    @Override
+    public String toString() {
+        return "W: " + width + " H: " + height + " X: " + x + " Y: " + y;
+    }
+
+    @Override
+    public boolean isVisible() {
+        return isVisible;
+    }
+
+    @Override
+    public void setVisible(boolean isVisible) {
+        this.isVisible = isVisible;
     }
 }

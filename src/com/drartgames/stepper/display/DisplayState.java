@@ -15,6 +15,8 @@ public interface DisplayState {
 
     List<AudioDescriptor> getAudioDescriptors();
 
+    List<PostWorkDescriptor> getWorkDescriptors();
+
     InputDescriptor getActiveInput();
 
     TextDescriptor getActiveScrollableText();

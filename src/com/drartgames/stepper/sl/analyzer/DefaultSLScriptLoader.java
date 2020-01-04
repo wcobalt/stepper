@@ -1,10 +1,11 @@
-package com.drartgames.stepper.sl;
+package com.drartgames.stepper.sl.analyzer;
 
 import com.drartgames.stepper.exceptions.AnalysisException;
 import com.drartgames.stepper.exceptions.ParseException;
 import com.drartgames.stepper.sl.lang.*;
 import com.drartgames.stepper.sl.parser.Parser;
 import com.drartgames.stepper.sl.parser.SLParser;
+import com.drartgames.stepper.sl.processors.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,19 +24,32 @@ public class DefaultSLScriptLoader implements SLScriptLoader {
         parser = new SLParser();
         statementAnalyzers = new ArrayList<>();
 
-        statementAnalyzers.add(new SingleStatementAnalyzer("load_image", DefaultSLInterpreter.LOAD_IMAGE_ID, 2));
-        statementAnalyzers.add(new SingleStatementAnalyzer("load_audio", DefaultSLInterpreter.LOAD_AUDIO_ID, 2));
-        statementAnalyzers.add(new SingleStatementAnalyzer("set_text", DefaultSLInterpreter.SET_TEXT_ID, 1));
-        statementAnalyzers.add(new SingleStatementAnalyzer("set_background", DefaultSLInterpreter.SET_BACKGROUND_ID, 1));
-        statementAnalyzers.add(new SingleStatementAnalyzer("play", DefaultSLInterpreter.PLAY_ID, 2));
-        statementAnalyzers.add(new ConditionalStatementAnalyzer("if_tag", DefaultSLInterpreter.IF_TAG_ID, 1, ELSE_KEYWORD));
-        statementAnalyzers.add(new ConditionalStatementAnalyzer("if_tag_n", DefaultSLInterpreter.IF_TAG_N_ID, 1, ELSE_KEYWORD));
-        statementAnalyzers.add(new SingleStatementAnalyzer("show", DefaultSLInterpreter.SHOW_ID, 1));
-        statementAnalyzers.add(new SingleStatementAnalyzer("tag", DefaultSLInterpreter.TAG_ID, 1));
-        statementAnalyzers.add(new SingleStatementAnalyzer("disable_dialog", DefaultSLInterpreter.DISABLE_DIALOG_ID, 1));
-        statementAnalyzers.add(new SingleStatementAnalyzer("enable_dialog", DefaultSLInterpreter.ENABLE_DIALOG_ID, 1));
-        statementAnalyzers.add(new SingleStatementAnalyzer("add_dialog", DefaultSLInterpreter.ADD_DIALOG_ID, 4));
-        statementAnalyzers.add(new SingleStatementAnalyzer("call", DefaultSLInterpreter.CALL_ID, 1));
+        statementAnalyzers.add(new SingleStatementAnalyzer("load_image",
+                LoadImageOperatorProcessor.LOAD_IMAGE_ID, LoadImageOperatorProcessor.ARGS_COUNT));
+        statementAnalyzers.add(new SingleStatementAnalyzer("load_audio",
+                LoadAudioOperatorProcessor.LOAD_AUDIO_ID, LoadAudioOperatorProcessor.ARGS_COUNT));
+        statementAnalyzers.add(new SingleStatementAnalyzer("set_text",
+                SetTextOperatorProcessor.SET_TEXT_ID, SetTextOperatorProcessor.ARGS_COUNT));
+        statementAnalyzers.add(new SingleStatementAnalyzer("set_background",
+                SetBackgroundOperatorProcessor.SET_BACKGROUND_ID, SetBackgroundOperatorProcessor.ARGS_COUNT));
+        statementAnalyzers.add(new SingleStatementAnalyzer("play",
+                PlayOperatorProcessor.PLAY_ID, PlayOperatorProcessor.ARGS_COUNT));
+        statementAnalyzers.add(new ConditionalStatementAnalyzer("if_tag",
+                IfTagOperatorProcessor.IF_TAG_ID, IfTagOperatorProcessor.ARGS_COUNT, ELSE_KEYWORD));
+        statementAnalyzers.add(new ConditionalStatementAnalyzer("if_tag_n",
+                IfTagOperatorProcessor.IF_TAG_N_ID, IfTagOperatorProcessor.ARGS_COUNT, ELSE_KEYWORD));
+        statementAnalyzers.add(new SingleStatementAnalyzer("show",
+                ShowOperatorProcessor.SHOW_ID, ShowOperatorProcessor.ARGS_COUNT));
+        statementAnalyzers.add(new SingleStatementAnalyzer("tag",
+                TagOperatorProcessor.TAG_ID, TagOperatorProcessor.ARGS_COUNT));
+        statementAnalyzers.add(new SingleStatementAnalyzer("disable_dialog",
+                DisableDialogOperatorProcessor.DISABLE_DIALOG_ID, DisableDialogOperatorProcessor.ARGS_COUNT));
+        statementAnalyzers.add(new SingleStatementAnalyzer("enable_dialog",
+                EnableDialogOperatorProcessor.ENABLE_DIALOG_ID, EnableDialogOperatorProcessor.ARGS_COUNT));
+        statementAnalyzers.add(new SingleStatementAnalyzer("add_dialog",
+                AddDialogOperatorProcessor.ADD_DIALOG_ID, AddDialogOperatorProcessor.ARGS_COUNT));
+        statementAnalyzers.add(new SingleStatementAnalyzer("call",
+                CallOperatorProcessor.CALL_ID, CallOperatorProcessor.ARGS_COUNT));
     }
 
     @Override
@@ -44,6 +58,7 @@ public class DefaultSLScriptLoader implements SLScriptLoader {
 
         List<Scene> scenes = loadScenes(parser);
 
+        //@todo maybe add call checks as well as checks of lookups (scenes, resources, dialogs)
         return scenes;
     }
 
@@ -158,7 +173,6 @@ public class DefaultSLScriptLoader implements SLScriptLoader {
         } else {
             for (StatementAnalyzer analyzer : statementAnalyzers) {
                 if (analyzer.getStatementBegin().equals(tokenValue)) {
-                    System.out.println(tokenValue);
                     operators = new ArrayList<>();
                     operators.add(analyzer.analyze(parser, this));
 

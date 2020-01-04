@@ -3,11 +3,13 @@ package com.drartgames.stepper.display;
 public interface DisplayToolkit {
     Display getDisplay();
 
-    void init(InputWork inputWork);
+    void initialize(InputWork inputWork);
 
     void setState(DisplayToolkitState state);
 
     DisplayToolkitState getState();
+
+    DisplayToolkitState makeNewState();
 
     void showMessage(String message, Picture picture);
 

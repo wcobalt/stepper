@@ -2,20 +2,27 @@ package com.drartgames.stepper.initializer;
 
 import com.drartgames.stepper.*;
 import com.drartgames.stepper.display.*;
-import com.drartgames.stepper.exceptions.NoInitSceneException;
-import com.drartgames.stepper.exceptions.SLVersionMismatchException;
+import com.drartgames.stepper.exceptions.*;
 import com.drartgames.stepper.sl.DefaultSLInterpreter;
-import com.drartgames.stepper.sl.DefaultScriptLoaderFacade;
+import com.drartgames.stepper.sl.analyzer.DefaultSLScriptLoader;
+import com.drartgames.stepper.sl.analyzer.DefaultScriptLoaderFacade;
 import com.drartgames.stepper.sl.SLInterpreter;
-import com.drartgames.stepper.sl.ScriptLoaderFacade;
+import com.drartgames.stepper.sl.analyzer.SLScriptLoader;
+import com.drartgames.stepper.sl.analyzer.ScriptLoaderFacade;
+import com.drartgames.stepper.sl.lang.Action;
+import com.drartgames.stepper.sl.lang.Scene;
 
 import java.awt.event.KeyEvent;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class DefaultStepperInitializer implements Initializer {
     private Logger logger = Logger.getLogger(DefaultStepperInitializer.class.getName());
@@ -47,13 +54,16 @@ public class DefaultStepperInitializer implements Initializer {
         @Override
         public void handle(Initializer initializer, String parameter) {
             initializer.logn("Stepper " + Launcher.getVersion().getFullStringVersion() + " (SL "
-                    + initializer.getInterpreter().getSLVersion().getFullStringVersion() + ")\n");
+                    + DefaultSLInterpreter.SL_VERSION.getFullStringVersion() + ")\n" +//@fixme it's not good to use DefaultSlInt directly instead of initializer.getInterpreter()
+                    "by Wert Cobalt\n");
 
             for (ParameterHandler handler : initializer.getParametersHandlers()) {
                 initializer.logn(handler.getParameter() +
                         (handler.hasAlias() ? " " + handler.getParameterAlias() : "") +
-                        (handler.hasArgument() ? handler.getArgumentHelp() : "") + " --- " + handler.getHelp());
+                        (handler.hasArgument() ? " " + handler.getArgumentHelp() : "") + " --- " + handler.getHelp());
             }
+
+            initializer.logn("");
         }
 
         @Override
@@ -83,7 +93,7 @@ public class DefaultStepperInitializer implements Initializer {
     }
 
     private class VersionParameterHandler implements ParameterHandler {
-        private String VERSION = "--version";
+        private String VERSION = "--SL_VERSION";
         private String VERSION_SHORT = "-v";
 
         @Override
@@ -195,7 +205,7 @@ public class DefaultStepperInitializer implements Initializer {
 
         @Override
         public String getHelp() {
-            return "sets directory (relative to working one) where data of the quests lies";
+            return "sets directory (relative to work. dir.) where the data of the quests lies";
         }
 
         @Override
@@ -222,7 +232,7 @@ public class DefaultStepperInitializer implements Initializer {
 
             for (ParameterHandler handler : parametersHandlers) {
                 if (parameter.equals(handler.getParameter()) ||
-                   (handler.hasAlias() && parameter.equals(handler.getParameterAlias()))) {
+                        (handler.hasAlias() && parameter.equals(handler.getParameterAlias()))) {
 
                     String arg = "";
 
@@ -256,7 +266,11 @@ public class DefaultStepperInitializer implements Initializer {
             return;
         }
 
-        interpreter = new DefaultSLInterpreter();
+        //@todo should display need initializer???
+        display = new DefaultDisplay(manifest.getQuestName(), this);
+        display.initialize();
+
+        interpreter = new DefaultSLInterpreter(display);
 
         if (!interpreter.getSLVersion().isHigherOrEqualThan(manifest.getRequiredSLVersion())) {
             throw new SLVersionMismatchException("Required by " + questName + " SL version (" +
@@ -265,8 +279,6 @@ public class DefaultStepperInitializer implements Initializer {
         }
 
         scriptLoaderFacade = new DefaultScriptLoaderFacade();
-        display = new DefaultDisplay(manifest.getQuestName(), this);
-        display.initialize();
 
         try {
             splashScreen = new DefaultPicture(SPLASH_SCREEN_PATH);
@@ -274,6 +286,8 @@ public class DefaultStepperInitializer implements Initializer {
         } catch (IOException exc) {
             logger.log(Level.SEVERE, "Unable to load splash screen image", exc);
         }
+
+        initDevConsole();
     }
 
     @Override
@@ -293,22 +307,21 @@ public class DefaultStepperInitializer implements Initializer {
                     break;
 
                 case SCENES_LOADED:
-                    textDescriptor.setMessage("Запуск скриптов");
+                    textDescriptor.setMessage("Загрузка ресурсов");
 
                     break;
             }
         });
 
-        display.awaitForKey(KeyEvent.VK_ENTER, (KeyAwaitDescriptor keyAwaitDescriptor) -> {
-            Thread thread = new Thread(() -> {
-                try {
-                    interpreter.run();
-                } catch (NoInitSceneException exc) {
-                    logger.log(Level.SEVERE, "There's no loaded init scene", exc);
-                }
-            });
+        //init all the scenes
+        try {
+            interpreter.initialize();
+        } catch (SLRuntimeException exc) {
+            logger.log(Level.SEVERE, "Runtime error when scenes initialization", exc);
+        }
 
-            thread.start();
+        display.awaitForKey(KeyEvent.VK_ENTER, (KeyAwaitDescriptor keyAwaitDescriptor) -> {
+            runInterpreter(interpreter);
 
             splashScreenDescriptor.setDoFree(true);
             loadingIconDescriptor.setDoFree(true);
@@ -318,6 +331,125 @@ public class DefaultStepperInitializer implements Initializer {
 
         //@todo make a fucking ability to localize the captions
         textDescriptor.setMessage("Нажмите ENTER");
+    }
+
+    private void runInterpreter(SLInterpreter slInterpreter) {
+        Scene scene = slInterpreter.getScenesManager().getSceneByName(manifest.getInitSceneName());
+        try {
+            slInterpreter.getScenesManager().setInitScene(scene);
+        } catch (NoInitSceneException exc) {
+            logger.log(Level.SEVERE, "Unable to set init scene. Check its name in manifest.", exc);
+        }
+
+        try {
+            slInterpreter.run();
+        } catch (SLRuntimeException exc) {
+            logger.log(Level.SEVERE, "Runtime SL exception: ", exc);
+        }
+    }
+
+    private void initDevConsole() {
+        Thread inputHandler = new Thread(() -> {
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(System.in))) {
+                Pattern commandPattern = Pattern.compile("([a-zA-Z_0-9]+)\\s*(.*)");
+
+                while (true) {
+                    String commandString = reader.readLine();
+
+                    System.out.println("Dev console's executing: " + commandString + "\n");
+                    //show_desc text/image/audio/animation/keyawait/input
+                    //rerun - may fuck up everything
+                    //exec
+
+                    Matcher matcher = commandPattern.matcher(commandString);
+
+                    if (matcher.find() && matcher.groupCount() >= 1) {
+                        String command = matcher.group(1);
+                        String argument = matcher.group(2);
+
+                        switch (command) {
+                            case "show_desc":
+                                List<? extends Descriptor> descriptors = null;
+                                DisplayState state = display.getDisplayState();
+
+                                switch (argument) {
+                                    case "text":
+                                        descriptors = state.getTextDescriptors();
+
+                                        break;
+                                    case "audio":
+                                        descriptors = state.getAudioDescriptors();
+
+                                        break;
+                                    case "image":
+                                        descriptors = state.getImageDescriptors();
+
+                                        break;
+                                    case "animation":
+                                        descriptors = state.getImageDescriptors();
+
+                                        break;
+                                    case "keyawait":
+                                        descriptors = state.getKeyAwaitDescriptors();
+
+                                        break;
+                                    case "input":
+                                        descriptors = state.getInputDescriptors();
+
+                                        break;
+                                    default:
+                                        System.out.println("Undefined descs to show: " + argument);
+                                }
+
+                                for (Descriptor descriptor : descriptors) {
+                                    System.out.println(descriptor.getClass().getName() + ": " + descriptor.toString());
+                                }
+
+                                break;
+                            case "rerun":
+                                display.stop();
+                                display.run();
+
+                                break;
+                            case "exec":
+                                String fullScene = "scene __auto_scene {\n\taction __auto_act {\n\t\t" + argument + "\n\t}\n}";
+
+                                SLScriptLoader scriptLoader = new DefaultSLScriptLoader();
+
+                                try {
+                                    Scene scene = scriptLoader.load(fullScene).get(0);
+                                    Action action = scene.getActionByName("__auto_act");
+
+                                    display.addWork((descriptor) -> {
+                                        try {
+                                            descriptor.setDoFree(true);
+
+                                            interpreter.executeAction(scene.getActionByName("__auto_act"));
+                                        } catch (SLRuntimeException exc) {
+                                            logger.log(Level.SEVERE, "Unable to execute statement", exc);
+                                        }
+                                    });
+                                } catch (ParseException exc) {
+                                    logger.log(Level.SEVERE, "Unable to parse statement", exc);
+                                } catch (AnalysisException exc) {
+                                    logger.log(Level.SEVERE, "Unable to analyze statement", exc);
+                                }
+
+                                break;
+                            default:
+                                System.out.println("Unsupported command:" + command);
+                        }
+
+                        System.out.println();
+                    } else
+                        System.out.println("Unsupported format. Check your syntax");
+                }
+            } catch (IOException exc) {
+                logger.log(Level.SEVERE, "Unable to get input from System.in in dev console", exc);
+            }
+        }, "Stepper Dev Console Thread");
+
+        inputHandler.start();
     }
 
     @Override

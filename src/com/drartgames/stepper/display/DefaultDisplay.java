@@ -9,6 +9,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
@@ -40,6 +41,7 @@ public class DefaultDisplay implements JFrameDisplay {
     private Font renderFont;
 
     private DisplayState state, providedDisplayState = null;
+    private Work stateSwapWork;
 
     private List<KeyEventEntry> keyEvents;
 
@@ -69,7 +71,7 @@ public class DefaultDisplay implements JFrameDisplay {
         imageRenderer = new DefaultImageRenderer();
         textRenderer = new DefaultTextRenderer();
         inputRenderer = new DefaultInputRenderer();
-        keyEvents = new ArrayList<>();
+        keyEvents = Collections.synchronizedList(new ArrayList<>());
 
         frame = new JFrame(title);
 
@@ -131,6 +133,15 @@ public class DefaultDisplay implements JFrameDisplay {
         state.getKeyAwaitDescriptors().add(keyAwaiterDescriptor);
 
         return keyAwaiterDescriptor;
+    }
+
+    @Override
+    public PostWorkDescriptor addWork(PostWork work) {
+        PostWorkDescriptor postWorkDescriptor = new DefaultPostWorkDescriptor(this, work);
+
+        state.getWorkDescriptors().add(postWorkDescriptor);
+
+        return postWorkDescriptor;
     }
 
     @Override
@@ -258,10 +269,16 @@ public class DefaultDisplay implements JFrameDisplay {
 
                 swapBuffers();
 
+                doWork();
+
                 if (providedDisplayState != null) {
                     state = providedDisplayState;
 
+                    if (stateSwapWork != null)
+                        stateSwapWork.execute();
+
                     providedDisplayState = null;
+                    stateSwapWork = null;
                 }
 
                 long delay = System.currentTimeMillis() - begin;
@@ -275,7 +292,7 @@ public class DefaultDisplay implements JFrameDisplay {
                     logger.log(Level.SEVERE, "Render thread was interrupted", exc);
                 }
             }
-        });
+        }, "Stepper Render Thread");
 
         thread.start();
     }
@@ -294,26 +311,28 @@ public class DefaultDisplay implements JFrameDisplay {
     }
 
     private void handleKeys() {
-        for (KeyEventEntry entry : keyEvents) {
-            switch (entry.getType()) {
-                case KeyEventEntry.KEY_TYPE:
-                    handleKeyType(entry.getKeyEvent());
+        synchronized (keyEvents) {
+            for (KeyEventEntry entry : keyEvents) {
+                switch (entry.getType()) {
+                    case KeyEventEntry.KEY_TYPE:
+                        handleKeyType(entry.getKeyEvent());
 
-                    break;
+                        break;
 
-                case KeyEventEntry.KEY_PRESS:
-                    handleKeyPress(entry.getKeyEvent());
+                    case KeyEventEntry.KEY_PRESS:
+                        handleKeyPress(entry.getKeyEvent());
 
-                    break;
+                        break;
 
-                case KeyEventEntry.KEY_RELEASE:
-                    handleKeyRelease(entry.getKeyEvent());
+                    case KeyEventEntry.KEY_RELEASE:
+                        handleKeyRelease(entry.getKeyEvent());
 
-                    break;
+                        break;
+                }
             }
-        }
 
-        keyEvents.clear();
+            keyEvents.clear();
+        }
     }
 
     private void handleKeyType(KeyEvent keyEvent) {
@@ -321,7 +340,7 @@ public class DefaultDisplay implements JFrameDisplay {
         char typed = keyEvent.getKeyChar();
 
         if (typed != KeyEvent.CHAR_UNDEFINED && typed != KeyEvent.VK_BACK_SPACE && activeInput != null) {
-            activeInput.setCurrentText(activeInput.getCurrentText() + typed);
+            activeInput.addChar(typed);
         }
     }
 
@@ -371,6 +390,20 @@ public class DefaultDisplay implements JFrameDisplay {
                 if (descriptor.doFree())
                     iterator.remove();
             }
+        }
+    }
+
+    private void doWork() {
+        //@fixme it's no good that code like this is repeated everywhere in Display code
+        Iterator<PostWorkDescriptor> iterator = state.getWorkDescriptors().iterator();
+
+        while (iterator.hasNext()) {
+            PostWorkDescriptor descriptor = iterator.next();
+
+            descriptor.getWork().execute(descriptor);
+
+            if (descriptor.doFree())
+                iterator.remove();
         }
     }
 
@@ -492,7 +525,13 @@ public class DefaultDisplay implements JFrameDisplay {
     }
 
     @Override
-    public void provideDisplayState(DisplayState displayState) {
+    public void provideDisplayState(DisplayState displayState, Work changeWork) {
         providedDisplayState = displayState;
+        stateSwapWork = changeWork;
+    }
+
+    @Override
+    public TextRenderer getTextRenderer() {
+        return textRenderer;
     }
 }

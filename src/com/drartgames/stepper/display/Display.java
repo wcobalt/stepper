@@ -17,6 +17,8 @@ public interface Display {
 
     KeyAwaitDescriptor awaitForKey(int key, KeyAwaitWork keyAwaitWork);
 
+    PostWorkDescriptor addWork(PostWork work);
+
     void run();
 
     void stop();
@@ -29,5 +31,7 @@ public interface Display {
 
     DisplayState getDisplayState();
 
-    void provideDisplayState(DisplayState displayState);
+    void provideDisplayState(DisplayState displayState, Work changeWork);
+
+    TextRenderer getTextRenderer();
 }
