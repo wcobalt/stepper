@@ -7,5 +7,7 @@ public interface DisplayToolkitState {
 
     ImageDescriptor getBackgroundDescriptor();
 
+    KeyAwaitDescriptor getKeyAwaitDescriptor();
+
     InputWork getInputWork();
 }

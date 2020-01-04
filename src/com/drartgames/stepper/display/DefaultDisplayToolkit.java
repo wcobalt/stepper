@@ -14,7 +14,7 @@ public class DefaultDisplayToolkit implements DisplayToolkit {
 
     private final static float PROMPT_GAP = 0.005f;
     private final static float PROMPT_INPUT_HEIGHT = 0.01f;
-    private final static float PROMPT_EFFECTIVE_WIDTH = 0.12f;
+    private final static float PROMPT_EFFECTIVE_WIDTH = 0.2f;
     private final static float PROMPT_IMAGE_WIDTH = 0.08f;
 
     public DefaultDisplayToolkit(Display display) {
@@ -44,15 +44,21 @@ public class DefaultDisplayToolkit implements DisplayToolkit {
     @Override
     public DisplayToolkitState makeNewState() {
         ImageDescriptor backgroundImage = display.addPicture(defaultPicture, 1.0f, 0.0f, 0.0f);
-        TextDescriptor mainText = display.addText("", 1.0f, 0.28f, 0.0f, 0.7f);
+        TextDescriptor mainText = display.addText("", 0.99f, 0.28f, 0.005f, 0.7f);
         mainText.setWordWrap(true);
 
-        InputDescriptor mainInput = display.addInput(1.0f, 0.04f, 0.005f, 0.96f);
+        InputDescriptor mainInput = display.addInput(0.99f, 0.04f, 0.005f, 0.96f);
         mainInput.setIgnoreNewline(true);
 
         display.getDisplayState().setActiveInput(mainInput);
 
-        return new DefaultDisplayToolkitState(backgroundImage, mainText, mainInput, inputWork);
+        KeyAwaitDescriptor keyAwaitDescriptor = display.awaitForKey(KeyEvent.VK_ENTER,
+                (descriptor) -> {
+                    inputWork.execute(mainInput.getCurrentText());
+                    mainInput.setCurrentText("");
+                });
+
+        return new DefaultDisplayToolkitState(backgroundImage, mainText, mainInput, keyAwaitDescriptor, inputWork);
     }
 
     @Override

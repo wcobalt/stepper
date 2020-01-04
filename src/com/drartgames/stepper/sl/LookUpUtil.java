@@ -15,4 +15,5 @@ public interface LookUpUtil {
 
     Dialog lookupDialog(SLInterpreter interpreter, String reference) throws SLRuntimeException;
 
+    Tag lookupTag(SLInterpreter interpreter, String reference) throws SLRuntimeException;
 }

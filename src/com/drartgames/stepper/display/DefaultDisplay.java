@@ -379,32 +379,44 @@ public class DefaultDisplay implements JFrameDisplay {
                 activeScrollableText.setScrollPosition(activeScrollableText.getScrollPosition() + scroll);
         }
 
-        Iterator<KeyAwaitDescriptor> iterator = state.getKeyAwaitDescriptors().iterator();
+        List<KeyAwaitDescriptor> keyAwaits = state.getKeyAwaitDescriptors();
+        List<Integer> removeList = new ArrayList<>();
 
-        while (iterator.hasNext()) {
-            KeyAwaitDescriptor descriptor = iterator.next();
+        int initialSize = keyAwaits.size();
+
+        for (int i = 0; i < initialSize; i++) {
+            KeyAwaitDescriptor descriptor = keyAwaits.get(i);
 
             if (descriptor.getKey() == keyCode) {
                 descriptor.getWork().execute(descriptor);
 
                 if (descriptor.doFree())
-                    iterator.remove();
+                    removeList.add(i);
             }
         }
+
+        for (int i = removeList.size() - 1; i >= 0; i--)
+            keyAwaits.remove(removeList.get(i));
     }
 
     private void doWork() {
         //@fixme it's no good that code like this is repeated everywhere in Display code
-        Iterator<PostWorkDescriptor> iterator = state.getWorkDescriptors().iterator();
+        List<PostWorkDescriptor> postWorks = state.getWorkDescriptors();
+        List<Integer> removeList = new ArrayList<>();
 
-        while (iterator.hasNext()) {
-            PostWorkDescriptor descriptor = iterator.next();
+        int initialSize = postWorks.size();
+
+        for (int i = 0; i < initialSize; i++) {
+            PostWorkDescriptor descriptor = postWorks.get(i);
 
             descriptor.getWork().execute(descriptor);
 
             if (descriptor.doFree())
-                iterator.remove();
+                removeList.add(i);
         }
+
+        for (int i = removeList.size() - 1; i >= 0; i--)
+            postWorks.remove(removeList.get(i));
     }
 
     private void handleAudios() {

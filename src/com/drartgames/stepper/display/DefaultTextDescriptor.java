@@ -141,6 +141,7 @@ public class DefaultTextDescriptor extends BaseFigureDescriptor implements TextD
                     currentWord = "";
 
                     if (isFirstWord) isFirstWord = false;
+                    if (ch == '\n') isFirstWord = true;
 
                     break;
                 default:

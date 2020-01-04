@@ -17,6 +17,8 @@ public class ShowOperatorProcessor extends BaseProcessor implements OperatorProc
     public void execute(SLInterpreter interpreter, Operator operator) throws SLRuntimeException {
         checkArguments(operator, ValueType.STRING_LITERAL);
 
-        interpreter.getToolkit().showMessage(operator.getArguments().get(0).getValue().getStringValue(), null);
+        String message = operator.getArguments().get(0).getValue().getStringValue();
+
+        interpreter.getToolkit().showMessage(message, null);
     }
 }

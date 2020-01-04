@@ -88,6 +88,16 @@ public class DefaultLookupUtil implements LookUpUtil {
         return dialog;
     }
 
+    @Override
+    public Tag lookupTag(SLInterpreter interpreter, String reference) throws SLRuntimeException {
+        Tag tag = interpreter.getTagsManager().getByName(reference);
+
+        if (tag == null)
+            throwException(interpreter, "There's no tag with name: " + reference, null);
+
+        return tag;
+    }
+
     private LookupResult lookup(SLInterpreter interpreter, String reference) throws SLRuntimeException {
         Matcher matcher = lookupPattern.matcher(reference);
 
@@ -97,23 +107,19 @@ public class DefaultLookupUtil implements LookUpUtil {
             Scene scene;
             String name;
 
-            switch (groupCount) {
-                case 1:
-                    scene = interpreter.getScenesManager().getCurrentScene();
-                    name = matcher.group(1);
+            String group1 = matcher.group(1), group2 = matcher.group(2);
 
-                    break;
+            if (group2 == null) {
+                //current scene
+                scene = interpreter.getScenesManager().getCurrentScene();
+                name = group1;
+            } else {
+                //other scene
+                scene = interpreter.getScenesManager().getSceneByName(group1);
+                name = group2;
 
-                case 2:
-                    scene = interpreter.getScenesManager().getSceneByName(matcher.group(1));
-                    name = matcher.group(2);
-
-                    if (scene == null)
-                        throwException(interpreter, "Failed lookup. There's no scene with name: " + matcher.group(1), null);
-
-                    break;
-                default:
-                    throw new SLRuntimeException("Some totally unexpected shit happened");
+                if (scene == null)
+                    throwException(interpreter, "There's no scene with name: " + matcher.group(1), null);
             }
 
             return new LookupResult(scene, name);

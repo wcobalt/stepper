@@ -3,19 +3,22 @@ package com.drartgames.stepper.sl.processors;
 import com.drartgames.stepper.exceptions.SLRuntimeException;
 import com.drartgames.stepper.sl.SLInterpreter;
 import com.drartgames.stepper.sl.lang.Operator;
+import com.drartgames.stepper.sl.lang.ValueType;
 
-public class SetTextOperatorProcessor implements OperatorProcessor {
+public class SetTextOperatorProcessor extends BaseProcessor implements OperatorProcessor {
     public static final int SET_TEXT_ID = 3;
     public static final int ARGS_COUNT = 1;
 
-    @Override
-    public void execute(SLInterpreter interpreter, Operator operator) throws SLRuntimeException {
-        System.out.println(operator.getName());
-
+    public SetTextOperatorProcessor() {
+        super(SET_TEXT_ID);
     }
 
     @Override
-    public int getOperatorId() {
-        return SET_TEXT_ID;
+    public void execute(SLInterpreter interpreter, Operator operator) throws SLRuntimeException {
+        checkArguments(operator, ValueType.STRING_LITERAL);
+
+        String text = operator.getArguments().get(0).getValue().getStringValue();
+
+        interpreter.getToolkit().setText(text);
     }
 }

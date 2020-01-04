@@ -1,6 +1,8 @@
 package com.drartgames.stepper.sl.processors;
 
 import com.drartgames.stepper.exceptions.SLRuntimeException;
+import com.drartgames.stepper.sl.DefaultLookupUtil;
+import com.drartgames.stepper.sl.LookUpUtil;
 import com.drartgames.stepper.sl.lang.Argument;
 import com.drartgames.stepper.sl.lang.Operator;
 import com.drartgames.stepper.sl.lang.ValueType;
@@ -9,9 +11,12 @@ import java.util.List;
 
 public abstract class BaseProcessor implements OperatorProcessor {
     private int operatorId;
+    protected LookUpUtil lookUpUtil;
 
     public BaseProcessor(int operatorId) {
         this.operatorId = operatorId;
+
+        lookUpUtil = new DefaultLookupUtil();
     }
 
     @Override
