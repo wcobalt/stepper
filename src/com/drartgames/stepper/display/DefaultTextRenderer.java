@@ -39,6 +39,8 @@ public class DefaultTextRenderer extends BaseRenderer implements TextRenderer {
 
                 Graphics g = jFrameDisplay.getRenderBuffer().getGraphics();
 
+                g.setColor(Color.RED);
+                g.fillRect(finalX - 1, finalY - 1, finalWidth + 1, finalHeight + 1);
                 g.drawImage(bufferedImage, finalX, finalY, finalWidth, finalHeight, null);
 
                 g.dispose();

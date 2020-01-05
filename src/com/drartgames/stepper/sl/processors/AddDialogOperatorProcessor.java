@@ -27,34 +27,16 @@ public class AddDialogOperatorProcessor extends BaseProcessor implements Operato
     @Override
     public void execute(SLInterpreter interpreter, Operator operator) throws SLRuntimeException {
         checkArguments(operator, ValueType.STRING_LITERAL, ValueType.STRING_LITERAL,
-                ValueType.GENERAL_LITERAL, ValueType.GENERAL_LITERAL);
+                ValueType.GENERAL_LITERAL, ValueType.BOOL_LITERAL);
 
         List<Argument> arguments = operator.getArguments();
         String pattern = arguments.get(0).getValue().getStringValue();
         String name = arguments.get(1).getValue().getStringValue();
-        String actionName = arguments.get(2).getValue().getGeneralLiteralValue().getStringRepresentation();
+        String actionName = arguments.get(2).getValue().getGeneralLiteralValue().toString();
 
         Action action = lookUpUtil.lookupAction(interpreter, actionName);
 
-        //@fixme getStringRepresentation to toString
-        String enabled = arguments.get(3).getValue().getGeneralLiteralValue().getStringRepresentation();
-
-        boolean isEnabled;
-
-        switch (enabled) {
-            case ENABLED:
-                isEnabled = true;
-
-                break;
-            case DISABLED:
-                isEnabled = false;
-
-                break;
-            default:
-                throw new SLRuntimeException("Undefined initial state of dialog: " + enabled +
-                        " at line " + operator.getCallLineNumber());
-        }
-
+        boolean isEnabled = arguments.get(3).getValue().getBoolValue();
 
         Dialog dialog = new DefaultDialog(name, pattern, action, isEnabled);
 

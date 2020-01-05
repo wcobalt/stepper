@@ -20,7 +20,7 @@ public class CallOperatorProcessor extends BaseProcessor implements OperatorProc
     public void execute(SLInterpreter interpreter, Operator operator) throws SLRuntimeException {
         checkArguments(operator, ValueType.GENERAL_LITERAL);
 
-        String actionName = operator.getArguments().get(0).getValue().getGeneralLiteralValue().getStringRepresentation();
+        String actionName = operator.getArguments().get(0).getValue().getGeneralLiteralValue().toString();
 
         Action action = lookUpUtil.lookupAction(interpreter, actionName);
 

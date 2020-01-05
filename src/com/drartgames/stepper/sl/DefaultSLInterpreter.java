@@ -20,7 +20,7 @@ import java.util.logging.Logger;
 public class DefaultSLInterpreter implements SLInterpreter {
     private static final Logger logger = Logger.getLogger(DefaultSLInterpreter.class.getName());
 
-    public static final Version SL_VERSION = new DefaultVersion("1.0.0:0");;
+    public static final Version SL_VERSION = new DefaultVersion("1.1.0:0");;
     private Display display;
     private DisplayToolkit toolkit;
     private ScenesManager scenesManager;
@@ -88,8 +88,8 @@ public class DefaultSLInterpreter implements SLInterpreter {
         addOperatorProcessor(new IfTagOperatorProcessor(true));
         addOperatorProcessor(new ShowOperatorProcessor());
         addOperatorProcessor(new TagOperatorProcessor());
-        addOperatorProcessor(new DisableDialogOperatorProcessor());
-        addOperatorProcessor(new EnableDialogOperatorProcessor());
+        addOperatorProcessor(new SwitchDialogOperatorProcessor());
+        addOperatorProcessor(new GotoOperatorProcessor());
         addOperatorProcessor(new AddDialogOperatorProcessor());
         addOperatorProcessor(new CallOperatorProcessor());
     }
@@ -139,7 +139,7 @@ public class DefaultSLInterpreter implements SLInterpreter {
         Dialog mostMatched = null;
         float maxMatch = 0.0f;
 
-        String clearInput = input.trim().replaceAll("\\s", " ").replaceAll("[ёЁ]", "е").toLowerCase();
+        String clearInput = input.trim().replaceAll("\\s+", " ").replaceAll("[ёЁ]", "е").toLowerCase();
 
         for (Dialog dialog : dialogs) {
             if (dialog.isEnabled()) {
@@ -197,6 +197,7 @@ public class DefaultSLInterpreter implements SLInterpreter {
         SceneCacheEntry cacheEntry = sceneCache.get(scene);
 
         muteAudio(true, display.getDisplayState());
+        scenesManager.setCurrentScene(scene);
 
         if (cacheEntry != null) {
             DisplayState newDisplayState = cacheEntry.getDisplayState();
@@ -230,14 +231,14 @@ public class DefaultSLInterpreter implements SLInterpreter {
     private void muteAudio(boolean doMute, DisplayState displayState) {
         for (AudioDescriptor descriptor : displayState.getAudioDescriptors()) {
             if (doMute) {
-                if (descriptor.isMutedForStateSwap()) {
-                    descriptor.setMuteForStateSwap(false);
-                    descriptor.start();
-                }
-            } else {
                 if (descriptor.isPlaying()) {
                     descriptor.setMuteForStateSwap(true);
                     descriptor.stop();
+                }
+            } else {
+                if (descriptor.isMutedForStateSwap()) {
+                    descriptor.setMuteForStateSwap(false);
+                    descriptor.start();
                 }
             }
         }

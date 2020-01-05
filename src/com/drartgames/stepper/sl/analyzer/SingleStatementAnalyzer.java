@@ -14,6 +14,9 @@ public class SingleStatementAnalyzer implements StatementAnalyzer {
     private static final char N = 'n';
     private static final char BACKSLASH = '\\';
     private static final char NEWLINE = '\n';
+    private static final String NONE_KEYWORD = "none";
+    private static final String ON_KEYWORD = "on";
+    private static final String OFF_KEYWORD = "off";
 
     private int argumentCount;
     private int operatorId;
@@ -57,7 +60,21 @@ public class SingleStatementAnalyzer implements StatementAnalyzer {
 
                 break;
             case SLParser.KEYWORD_ID:
-                value = new DefaultValue(new DefaultGeneralLiteral(token));
+                switch (token) {
+                    case NONE_KEYWORD:
+                        value = new DefaultValue();
+
+                        break;
+                    case OFF_KEYWORD:
+                    case ON_KEYWORD:
+                        boolean _true = token.equals(ON_KEYWORD);
+
+                        value = new DefaultValue(_true);
+
+                        break;
+                    default:
+                        value = new DefaultValue(new DefaultGeneralLiteral(token));
+                }
 
                 break;
             case SLParser.FLOAT:

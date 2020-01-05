@@ -28,7 +28,7 @@ public class PlayOperatorProcessor extends BaseProcessor implements OperatorProc
         List<Argument> arguments = operator.getArguments();
 
         String audioName = arguments.get(0).getValue().getStringValue();
-        String loopOnce = arguments.get(1).getValue().getGeneralLiteralValue().getStringRepresentation();
+        String loopOnce = arguments.get(1).getValue().getGeneralLiteralValue().toString();
 
         AudioResource audioResource = lookUpUtil.lookupAudio(interpreter, audioName);
 

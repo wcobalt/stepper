@@ -28,6 +28,7 @@ public class DefaultImageRenderer extends BaseRenderer implements ImageRenderer 
                 finalX = (int) (x * renderResolution.width);
                 finalY = (int) (y * renderResolution.height);
 
+                //System.out.println(finalX + " " + finalY + " " + (finalWidth / (float)finalHeight) + " " + (descriptor.getWidth() /descriptor.getHeight()));
                 Graphics g = jFrameDisplay.getRenderBuffer().getGraphics();
 
                 g.drawImage(descriptor.getPicture().getImage(), finalX, finalY, finalWidth, finalHeight, null);

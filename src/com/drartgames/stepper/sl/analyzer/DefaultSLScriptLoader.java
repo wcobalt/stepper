@@ -42,10 +42,10 @@ public class DefaultSLScriptLoader implements SLScriptLoader {
                 ShowOperatorProcessor.SHOW_ID, ShowOperatorProcessor.ARGS_COUNT));
         statementAnalyzers.add(new SingleStatementAnalyzer("tag",
                 TagOperatorProcessor.TAG_ID, TagOperatorProcessor.ARGS_COUNT));
-        statementAnalyzers.add(new SingleStatementAnalyzer("disable_dialog",
-                DisableDialogOperatorProcessor.DISABLE_DIALOG_ID, DisableDialogOperatorProcessor.ARGS_COUNT));
-        statementAnalyzers.add(new SingleStatementAnalyzer("enable_dialog",
-                EnableDialogOperatorProcessor.ENABLE_DIALOG_ID, EnableDialogOperatorProcessor.ARGS_COUNT));
+        statementAnalyzers.add(new SingleStatementAnalyzer("switch_dialog",
+                SwitchDialogOperatorProcessor.SWITCH_DIALOG_ID, SwitchDialogOperatorProcessor.ARGS_COUNT));
+        statementAnalyzers.add(new SingleStatementAnalyzer("goto",
+                GotoOperatorProcessor.GOTO_ID, GotoOperatorProcessor.ARGS_COUNT));
         statementAnalyzers.add(new SingleStatementAnalyzer("add_dialog",
                 AddDialogOperatorProcessor.ADD_DIALOG_ID, AddDialogOperatorProcessor.ARGS_COUNT));
         statementAnalyzers.add(new SingleStatementAnalyzer("call",

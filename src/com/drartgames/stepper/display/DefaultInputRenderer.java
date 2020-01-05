@@ -12,16 +12,14 @@ public class DefaultInputRenderer extends BaseRenderer implements InputRenderer 
 
     @Override
     public void render(InputDescriptor inputDescriptor) {
-        if (inputDescriptor.isVisible()) {
-            TextDescriptor textDescriptor = texts.get(inputDescriptor);
+        TextDescriptor textDescriptor = texts.get(inputDescriptor);
 
-            if (textDescriptor == null) {
-                textDescriptor = inputDescriptor.getDisplay().addText("", 0, 0, 0, 0);
-                texts.put(inputDescriptor, textDescriptor);
-            }
-
-            synchronize(inputDescriptor, textDescriptor);
+        if (textDescriptor == null) {
+            textDescriptor = inputDescriptor.getDisplay().addText("", 0, 0, 0, 0);
+            texts.put(inputDescriptor, textDescriptor);
         }
+
+        synchronize(inputDescriptor, textDescriptor);
     }
 
     private void synchronize(InputDescriptor input, TextDescriptor text) {
@@ -30,5 +28,6 @@ public class DefaultInputRenderer extends BaseRenderer implements InputRenderer 
         text.setY(input.getY());
         text.setWidth(input.getWidth());
         text.setHeight(input.getHeight());
+        text.setVisible(input.isVisible());
     }
 }
