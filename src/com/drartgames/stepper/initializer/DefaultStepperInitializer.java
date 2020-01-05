@@ -324,13 +324,13 @@ public class DefaultStepperInitializer implements Initializer {
             logger.log(Level.SEVERE, "Runtime error when scenes initialization", exc);
         }
 
-        display.awaitForKey(KeyEvent.VK_ENTER, (KeyAwaitDescriptor keyAwaitDescriptor) -> {
+        display.awaitForKey(KeyEvent.VK_ENTER, (descriptor) -> {
             runInterpreter(interpreter);
 
             splashScreenDescriptor.setDoFree(true);
             loadingIconDescriptor.setDoFree(true);
             textDescriptor.setDoFree(true);
-            keyAwaitDescriptor.setDoFree(true);
+            descriptor.setDoFree(true);
         });
 
         //@todo make a fucking ability to localize the captions
@@ -437,6 +437,12 @@ public class DefaultStepperInitializer implements Initializer {
                                     logger.log(Level.SEVERE, "Unable to parse statement", exc);
                                 } catch (AnalysisException exc) {
                                     logger.log(Level.SEVERE, "Unable to analyze statement", exc);
+                                }
+
+                                break;
+                            case "threads":
+                                for (Thread thread : Thread.getAllStackTraces().keySet()) {
+                                    System.out.println(thread.getName());
                                 }
 
                                 break;

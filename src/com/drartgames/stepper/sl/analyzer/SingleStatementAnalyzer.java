@@ -52,12 +52,16 @@ public class SingleStatementAnalyzer implements StatementAnalyzer {
                 value = new DefaultValue(processString(token));
 
                 break;
-            case SLParser.NUMBER:
+            case SLParser.INTEGRAL:
                 value = new DefaultValue(Integer.valueOf(token));
 
                 break;
             case SLParser.KEYWORD_ID:
                 value = new DefaultValue(new DefaultGeneralLiteral(token));
+
+                break;
+            case SLParser.FLOAT:
+                value = new DefaultValue(Float.valueOf(token));
 
                 break;
         }

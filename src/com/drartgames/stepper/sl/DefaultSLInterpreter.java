@@ -191,16 +191,22 @@ public class DefaultSLInterpreter implements SLInterpreter {
     @Override
     public void gotoScene(Scene scene) throws SLRuntimeException {
         //check for saved states
-            //load if there's one
-            //create new state otherwise
+        //load if there's one
+        //create new state otherwise
 
         SceneCacheEntry cacheEntry = sceneCache.get(scene);
+
+        muteAudio(true, display.getDisplayState());
 
         if (cacheEntry != null) {
             DisplayState newDisplayState = cacheEntry.getDisplayState();
             DisplayToolkitState newDisplayToolkitState = cacheEntry.getToolkitState();
 
-            display.provideDisplayState(newDisplayState, () -> toolkit.setState(newDisplayToolkitState));
+            display.provideDisplayState(newDisplayState, () -> {
+                toolkit.setState(newDisplayToolkitState);
+
+                muteAudio(false, display.getDisplayState());
+            });
         } else {
             DisplayState newDisplayState = new DefaultDisplayState();
 
@@ -218,6 +224,22 @@ public class DefaultSLInterpreter implements SLInterpreter {
                     logger.log(Level.SEVERE, "Runtime exception, when executing `" + firstCome.getName() + "` action", exc);
                 }
             });
+        }
+    }
+
+    private void muteAudio(boolean doMute, DisplayState displayState) {
+        for (AudioDescriptor descriptor : displayState.getAudioDescriptors()) {
+            if (doMute) {
+                if (descriptor.isMutedForStateSwap()) {
+                    descriptor.setMuteForStateSwap(false);
+                    descriptor.start();
+                }
+            } else {
+                if (descriptor.isPlaying()) {
+                    descriptor.setMuteForStateSwap(true);
+                    descriptor.stop();
+                }
+            }
         }
     }
 

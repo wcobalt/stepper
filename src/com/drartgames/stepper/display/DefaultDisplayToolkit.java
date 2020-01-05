@@ -72,12 +72,12 @@ public class DefaultDisplayToolkit implements DisplayToolkit {
     }
 
     @Override
-    public void showMessage(String message, Picture picture) {
-        showPrompt(message, picture, null);
+    public void showMessage(String message, Picture picture, Work work) {
+        showPrompt(message, picture, null, work);
     }
 
     @Override
-    public void showPrompt(String message, Picture picture, InputWork inputWork) {
+    public void showPrompt(String message, Picture picture, InputWork inputWork, Work work) {
         //PROMPT SCHEME
         //GAP
         //[IMAGE
@@ -152,6 +152,9 @@ public class DefaultDisplayToolkit implements DisplayToolkit {
                 input.setDoFree(true);
                 display.getDisplayState().setActiveInput(state.getMainInputDescriptor());
             }
+
+            if (work != null)
+                work.execute();
         });
     }
 

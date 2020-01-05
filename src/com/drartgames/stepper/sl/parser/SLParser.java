@@ -9,9 +9,10 @@ public class SLParser implements Parser {
     public static final int KEYWORD_ID = 1,
             SPACE = 2,
             DELIMITER = 3,
-            NUMBER = 4,
+            INTEGRAL = 4,
             STRING = 5,
-            SINGLE_LINE_COMMENT = 6;
+            SINGLE_LINE_COMMENT = 6,
+            FLOAT = 7;
 
     private static final String DELIMITERS = "{}";
     private static final String SINGLE_LINE_COMMENT_SEQUENCE = "//";
@@ -87,10 +88,19 @@ public class SLParser implements Parser {
 
     private class NumberChecker implements TokenChecker {
         private static final char MINUS = '-';
+        private boolean doParseFloat;
+        private int tokenType;
+
+        public NumberChecker(boolean doParseFloat, int tokenType) {
+            this.doParseFloat = doParseFloat;
+            this.tokenType = tokenType;
+        }
 
         @Override
         public TokenMatch checkMatch(String content, int position, int length) {
             TokenMatch tokenMatch = TokenMatch.NO_MATCH;
+
+            boolean wasPoint = false;
 
             for (int i = 0; i < length; i++) {
                 char ch = content.charAt(position + i);
@@ -99,6 +109,13 @@ public class SLParser implements Parser {
                     tokenMatch = TokenMatch.PROBABLE_MATCH;
                 } else if (ch >= '0' && ch <= '9') {
                     tokenMatch = TokenMatch.FULL_MATCH;
+                } else if (doParseFloat && ch == '.' && !wasPoint && i != 0) {
+                    if (i != length - 1)
+                        tokenMatch = TokenMatch.FULL_MATCH;
+                    else
+                        tokenMatch = TokenMatch.PROBABLE_MATCH;
+
+                    wasPoint = true;
                 } else
                     return TokenMatch.NO_MATCH;
             }
@@ -108,7 +125,7 @@ public class SLParser implements Parser {
 
         @Override
         public int getTokenType() {
-            return NUMBER;
+            return tokenType;
         }
     }
 
@@ -116,7 +133,8 @@ public class SLParser implements Parser {
         List<TokenChecker> checkers = new ArrayList<>();
 
         checkers.add(new KeywordIdChecker());
-        checkers.add(new NumberChecker());
+        checkers.add(new NumberChecker(false, INTEGRAL));
+        checkers.add(new NumberChecker(true, FLOAT));
         checkers.add(new StringChecker());
         checkers.add(new SingleCharChecker(DELIMITERS, DELIMITER));
         checkers.add(new SingleCharChecker(SPACES, SPACE));

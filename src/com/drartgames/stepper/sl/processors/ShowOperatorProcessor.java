@@ -19,6 +19,6 @@ public class ShowOperatorProcessor extends BaseProcessor implements OperatorProc
 
         String message = operator.getArguments().get(0).getValue().getStringValue();
 
-        interpreter.getToolkit().showMessage(message, null);
+        interpreter.getToolkit().showMessage(message, null, null);
     }
 }
