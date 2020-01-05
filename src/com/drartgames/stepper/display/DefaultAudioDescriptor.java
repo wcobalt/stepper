@@ -20,14 +20,19 @@ public class DefaultAudioDescriptor extends BaseDescriptor implements AudioDescr
         isPlaying = false;
         continueFrom = NO_CONTINUE_FROM;
         muteForStateSwap = false;
+        wasStarted = false;
     }
 
     @Override
     public void update() {
+        if (isPlaying && !audio.getClip().isRunning())
+            isPlaying = false;
+
         if (!isPlaying && !muteForStateSwap && !isPaused && wasStarted) {
             if (audioEndWork != null)
                 audioEndWork.execute(this);
             setDoFree(true);
+
         }
     }
 
@@ -44,8 +49,6 @@ public class DefaultAudioDescriptor extends BaseDescriptor implements AudioDescr
     @Override
     public void setIsLooped(boolean isLooped) {
         this.isLooped = isLooped;
-
-        handleLooping();
     }
 
     @Override
@@ -83,7 +86,8 @@ public class DefaultAudioDescriptor extends BaseDescriptor implements AudioDescr
 
     @Override
     public String toString() {
-        return "L: " + isLooped;
+        return "L: " + isLooped + " P: " + isPaused + " PL: " + isPlaying + " M: " + muteForStateSwap + " S: " +
+                wasStarted + " CF: " + continueFrom;
     }
 
     @Override
@@ -101,7 +105,7 @@ public class DefaultAudioDescriptor extends BaseDescriptor implements AudioDescr
             if (isLooped)
                 audio.getClip().loop(Clip.LOOP_CONTINUOUSLY);
             else
-                audio.getClip().loop(1);//@fixme or 1
+                audio.getClip().loop(0);
         }
     }
 }

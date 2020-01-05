@@ -139,7 +139,7 @@ public class DefaultSLInterpreter implements SLInterpreter {
         Dialog mostMatched = null;
         float maxMatch = 0.0f;
 
-        String clearInput = input.trim().replaceAll("\\s", " ").toLowerCase();
+        String clearInput = input.trim().replaceAll("\\s", " ").replaceAll("[ёЁ]", "е").toLowerCase();
 
         for (Dialog dialog : dialogs) {
             if (dialog.isEnabled()) {

@@ -447,7 +447,7 @@ public class DefaultStepperInitializer implements Initializer {
 
                                 break;
                             default:
-                                System.out.println("Unsupported command:" + command);
+                                System.out.println("Unsupported command: " + command);
                         }
 
                         System.out.println();
