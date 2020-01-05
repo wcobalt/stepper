@@ -6,14 +6,14 @@ public class DefaultVersion implements Version {
     private int major, minor, index, buildNumber;
 
     public DefaultVersion(String version) {
-        Pattern regexp = Pattern.compile("([0-9]+)\\.([0-9]+)\\.([0-9]+):([0-9]+)");
+        Pattern regexp = Pattern.compile("^\\s*([0-9]+)\\.([0-9]+)\\.([0-9]+):([0-9]+)\\s*$");
         Matcher matcher = regexp.matcher(version);
 
-        if (matcher.groupCount() == 4) {
-            major = Integer.valueOf(matcher.group(0));
-            minor = Integer.valueOf(matcher.group(1));
-            index = Integer.valueOf(matcher.group(2));
-            buildNumber = Integer.valueOf(matcher.group(3));
+        if (matcher.find() && matcher.groupCount() == 4) {
+            major = Integer.valueOf(matcher.group(1));
+            minor = Integer.valueOf(matcher.group(2));
+            index = Integer.valueOf(matcher.group(3));
+            buildNumber = Integer.valueOf(matcher.group(4));
         } else
             throw new IllegalArgumentException("Version has unsupported syntax");
     }
@@ -52,6 +52,14 @@ public class DefaultVersion implements Version {
 
     @Override
     public String getFullStringVersion() {
-        return getStringVersion();
+        return "v" + getStringVersion();
+    }
+
+    @Override
+    public boolean isHigherOrEqualThan(Version version) {
+        return (major >= version.getMajor() &&
+                minor >= version.getMinor() &&
+                index >= version.getIndex() &&
+                buildNumber >= version.getBuildNumber());
     }
 }

@@ -1,10 +1,16 @@
 package com.drartgames.stepper.initializer;
 
+import com.drartgames.stepper.Manifest;
+import com.drartgames.stepper.exceptions.SLVersionMismatchException;
+import com.drartgames.stepper.display.Display;
+import com.drartgames.stepper.sl.SLInterpreter;
+import com.drartgames.stepper.sl.analyzer.ScriptLoaderFacade;
+
 import java.io.File;
 import java.util.List;
 
 public interface Initializer {
-    void initialize(String... args);
+    void initialize(String... args) throws SLVersionMismatchException;
 
     void run();
 
@@ -18,7 +24,18 @@ public interface Initializer {
 
     void setQuestsDirectory(File directory);
 
+    SLInterpreter getInterpreter();
+
+    File getQuestDirectory();
+
     String getCurrentQuestName();
 
     File getQuestsDirectory();
+
+    Manifest getManifest();
+
+    ScriptLoaderFacade getScriptLoaderFacade();
+
+    Display getDisplay();
+
 }
