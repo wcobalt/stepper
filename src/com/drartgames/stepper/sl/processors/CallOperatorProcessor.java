@@ -8,7 +8,7 @@ import com.drartgames.stepper.sl.lang.Action;
 import com.drartgames.stepper.sl.lang.Operator;
 import com.drartgames.stepper.sl.lang.ValueType;
 
-public class CallOperatorProcessor extends BaseProcessor implements OperatorProcessor {
+public class CallOperatorProcessor extends BaseProcessor {
     public static final int CALL_ID = 13;
     public static final int ARGS_COUNT = 1;
 

@@ -10,7 +10,7 @@ import com.drartgames.stepper.sl.lang.memory.AudioResource;
 
 import java.util.List;
 
-public class PlayOperatorProcessor extends BaseProcessor implements OperatorProcessor {
+public class PlayOperatorProcessor extends BaseProcessor {
     private static final String LOOP = "loop";
     private static final String ONCE = "once";
 

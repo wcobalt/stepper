@@ -4,7 +4,7 @@ public class DefaultCounter extends BaseEntity implements Counter {
     private int counter;
 
     public DefaultCounter(String name) {
-        super(name);
+        this(name, 0);
     }
 
     public DefaultCounter(String name, int counter) {

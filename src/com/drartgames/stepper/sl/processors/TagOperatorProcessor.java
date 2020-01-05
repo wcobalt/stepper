@@ -7,7 +7,7 @@ import com.drartgames.stepper.sl.lang.ValueType;
 import com.drartgames.stepper.sl.lang.memory.DefaultTag;
 import com.drartgames.stepper.sl.lang.memory.Tag;
 
-public class TagOperatorProcessor extends BaseProcessor implements OperatorProcessor {
+public class TagOperatorProcessor extends BaseProcessor {
     public static final int TAG_ID = 9;
     public static final int ARGS_COUNT = 1;
 

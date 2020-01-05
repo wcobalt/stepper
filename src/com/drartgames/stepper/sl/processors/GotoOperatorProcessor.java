@@ -7,7 +7,7 @@ import com.drartgames.stepper.sl.lang.Scene;
 import com.drartgames.stepper.sl.lang.ValueType;
 import com.drartgames.stepper.sl.lang.memory.Dialog;
 
-public class GotoOperatorProcessor extends BaseProcessor implements OperatorProcessor {
+public class GotoOperatorProcessor extends BaseProcessor {
     public static final int GOTO_ID = 11;
     public static final int ARGS_COUNT = 1;
 

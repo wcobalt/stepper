@@ -6,7 +6,7 @@ import com.drartgames.stepper.sl.lang.Operator;
 import com.drartgames.stepper.sl.lang.ValueType;
 import com.drartgames.stepper.sl.lang.memory.PictureResource;
 
-public class SetBackgroundOperatorProcessor extends BaseProcessor implements OperatorProcessor {
+public class SetBackgroundOperatorProcessor extends BaseProcessor {
     public static final int SET_BACKGROUND_ID = 4;
     public static final int ARGS_COUNT = 1;
 

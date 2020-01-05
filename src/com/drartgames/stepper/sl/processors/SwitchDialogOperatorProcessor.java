@@ -9,7 +9,7 @@ import com.drartgames.stepper.sl.lang.memory.Dialog;
 
 import java.util.List;
 
-public class SwitchDialogOperatorProcessor extends BaseProcessor implements OperatorProcessor {
+public class SwitchDialogOperatorProcessor extends BaseProcessor {
     public static final int SWITCH_DIALOG_ID = 10;
     public static final int ARGS_COUNT = 2;
 

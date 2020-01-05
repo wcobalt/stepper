@@ -50,6 +50,14 @@ public class DefaultSLScriptLoader implements SLScriptLoader {
                 AddDialogOperatorProcessor.ADD_DIALOG_ID, AddDialogOperatorProcessor.ARGS_COUNT));
         statementAnalyzers.add(new SingleStatementAnalyzer("call",
                 CallOperatorProcessor.CALL_ID, CallOperatorProcessor.ARGS_COUNT));
+        statementAnalyzers.add(new SingleStatementAnalyzer("counter_set",
+                CounterSetOperatorProcessor.COUNTER_SET_ID, CounterSetOperatorProcessor.ARGS_COUNT));
+        statementAnalyzers.add(new SingleStatementAnalyzer("counter_add",
+                CounterAddOperatorProcessor.COUNTER_ADD_ID, CounterAddOperatorProcessor.ARGS_COUNT));
+        statementAnalyzers.add(new SingleStatementAnalyzer("call_extern",
+                CallExternOperatorProcessor.CALL_EXTERN_ID, CallExternOperatorProcessor.ARGS_COUNT));
+        statementAnalyzers.add(new ConditionalStatementAnalyzer("if_counter",
+                IfCounterOperatorProcessor.IF_COUNTER_ID, IfCounterOperatorProcessor.ARGS_COUNT, ELSE_KEYWORD));
     }
 
     @Override

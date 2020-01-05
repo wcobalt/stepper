@@ -7,7 +7,7 @@ import com.drartgames.stepper.sl.lang.Operator;
 import com.drartgames.stepper.sl.lang.ValueType;
 import com.drartgames.stepper.sl.lang.memory.Tag;
 
-public class IfTagOperatorProcessor extends BaseProcessor implements OperatorProcessor {
+public class IfTagOperatorProcessor extends BaseConditionalProcessor {
     public static final int IF_TAG_ID = 6;
     public static final int IF_TAG_N_ID = 7;
     public static final int ARGS_COUNT = 1;
@@ -21,22 +21,13 @@ public class IfTagOperatorProcessor extends BaseProcessor implements OperatorPro
     }
 
     @Override
-    public void execute(SLInterpreter interpreter, Operator operator) throws SLRuntimeException {
-        if (!(operator instanceof ConditionalOperator))
-            throw new SLRuntimeException("The operator must be a conditional operator");
-        else {
-            ConditionalOperator conditionalOperator = (ConditionalOperator)operator;
+    protected boolean calculateCondition(SLInterpreter interpreter, ConditionalOperator operator) throws SLRuntimeException {
+        checkArguments(operator, ValueType.STRING_LITERAL);
 
-            checkArguments(operator, ValueType.STRING_LITERAL);
+        String tagName = operator.getArguments().get(0).getValue().getStringValue();
 
-            String tagName = operator.getArguments().get(0).getValue().getStringValue();
+        Tag tag = interpreter.getTagsManager().getByName(tagName);
 
-            Tag tag = interpreter.getTagsManager().getByName(tagName);
-
-            if ((tag != null && !isInverted) || (tag == null && isInverted))
-                interpreter.executeOperators(conditionalOperator.getPositiveBranch());
-            else
-                interpreter.executeOperators(conditionalOperator.getNegativeBranch());
-        }
+        return  ((tag != null && !isInverted) || (tag == null && isInverted));
     }
 }

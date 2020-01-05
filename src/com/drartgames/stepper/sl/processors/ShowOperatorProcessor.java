@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class ShowOperatorProcessor extends BaseProcessor implements OperatorProcessor {
+public class ShowOperatorProcessor extends BaseProcessor {
     private static final Logger logger = Logger.getLogger(ShowOperatorProcessor.class.getName());
 
     public static final int SHOW_ID = 8;

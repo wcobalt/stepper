@@ -13,7 +13,7 @@ import com.drartgames.stepper.sl.lang.memory.Dialog;
 
 import java.util.List;
 
-public class AddDialogOperatorProcessor extends BaseProcessor implements OperatorProcessor {
+public class AddDialogOperatorProcessor extends BaseProcessor {
     public static final int ADD_DIALOG_ID = 12;
     public static final int ARGS_COUNT = 4;
 

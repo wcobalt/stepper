@@ -5,7 +5,7 @@ import com.drartgames.stepper.sl.SLInterpreter;
 import com.drartgames.stepper.sl.lang.Operator;
 import com.drartgames.stepper.sl.lang.ValueType;
 
-public class SetTextOperatorProcessor extends BaseProcessor implements OperatorProcessor {
+public class SetTextOperatorProcessor extends BaseProcessor {
     public static final int SET_TEXT_ID = 3;
     public static final int ARGS_COUNT = 1;
 

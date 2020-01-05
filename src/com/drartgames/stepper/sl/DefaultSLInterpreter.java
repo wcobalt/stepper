@@ -92,6 +92,10 @@ public class DefaultSLInterpreter implements SLInterpreter {
         addOperatorProcessor(new GotoOperatorProcessor());
         addOperatorProcessor(new AddDialogOperatorProcessor());
         addOperatorProcessor(new CallOperatorProcessor());
+        addOperatorProcessor(new CounterSetOperatorProcessor());
+        addOperatorProcessor(new CounterAddOperatorProcessor());
+        addOperatorProcessor(new CallExternOperatorProcessor());
+        addOperatorProcessor(new IfCounterOperatorProcessor());
     }
 
     private void addOperatorProcessor(OperatorProcessor operatorProcessor) {
