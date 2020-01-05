@@ -9,5 +9,9 @@ public interface Value {
 
     float getFloatValue();
 
+    boolean getBoolValue();
+
+    boolean isNoneValue();
+
     GeneralLiteral getGeneralLiteralValue();
 }

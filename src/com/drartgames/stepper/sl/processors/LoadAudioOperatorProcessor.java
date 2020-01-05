@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class LoadAudioOperatorProcessor extends BaseProcessor implements OperatorProcessor {
+public class LoadAudioOperatorProcessor extends BaseProcessor {
     private static final Logger logger = Logger.getLogger(LoadImageOperatorProcessor.class.getName());
 
     public static final int LOAD_AUDIO_ID = 2;
@@ -30,7 +30,7 @@ public class LoadAudioOperatorProcessor extends BaseProcessor implements Operato
 
     @Override
     public void execute(SLInterpreter interpreter, Operator operator) throws SLRuntimeException {
-        checkArguments(operator, ValueType.STRING_LITERAL, ValueType.STRING_LITERAL);
+        checkArguments(operator, false, ValueType.STRING_LITERAL, ValueType.STRING_LITERAL);
 
         //@todo NEVER DOUBLE ANY CODE
         List<Argument> arguments = operator.getArguments();

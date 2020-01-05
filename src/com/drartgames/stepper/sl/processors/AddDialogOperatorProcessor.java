@@ -1,8 +1,6 @@
 package com.drartgames.stepper.sl.processors;
 
 import com.drartgames.stepper.exceptions.SLRuntimeException;
-import com.drartgames.stepper.sl.DefaultLookupUtil;
-import com.drartgames.stepper.sl.LookUpUtil;
 import com.drartgames.stepper.sl.SLInterpreter;
 import com.drartgames.stepper.sl.lang.Action;
 import com.drartgames.stepper.sl.lang.Argument;
@@ -13,7 +11,7 @@ import com.drartgames.stepper.sl.lang.memory.Dialog;
 
 import java.util.List;
 
-public class AddDialogOperatorProcessor extends BaseProcessor implements OperatorProcessor {
+public class AddDialogOperatorProcessor extends BaseProcessor {
     public static final int ADD_DIALOG_ID = 12;
     public static final int ARGS_COUNT = 4;
 
@@ -26,35 +24,17 @@ public class AddDialogOperatorProcessor extends BaseProcessor implements Operato
 
     @Override
     public void execute(SLInterpreter interpreter, Operator operator) throws SLRuntimeException {
-        checkArguments(operator, ValueType.STRING_LITERAL, ValueType.STRING_LITERAL,
-                ValueType.GENERAL_LITERAL, ValueType.GENERAL_LITERAL);
+        checkArguments(operator, false, ValueType.STRING_LITERAL, ValueType.STRING_LITERAL,
+                ValueType.GENERAL_LITERAL, ValueType.BOOL_LITERAL);
 
         List<Argument> arguments = operator.getArguments();
         String pattern = arguments.get(0).getValue().getStringValue();
         String name = arguments.get(1).getValue().getStringValue();
-        String actionName = arguments.get(2).getValue().getGeneralLiteralValue().getStringRepresentation();
+        String actionName = arguments.get(2).getValue().getGeneralLiteralValue().toString();
 
         Action action = lookUpUtil.lookupAction(interpreter, actionName);
 
-        //@fixme getStringRepresentation to toString
-        String enabled = arguments.get(3).getValue().getGeneralLiteralValue().getStringRepresentation();
-
-        boolean isEnabled;
-
-        switch (enabled) {
-            case ENABLED:
-                isEnabled = true;
-
-                break;
-            case DISABLED:
-                isEnabled = false;
-
-                break;
-            default:
-                throw new SLRuntimeException("Undefined initial state of dialog: " + enabled +
-                        " at line " + operator.getCallLineNumber());
-        }
-
+        boolean isEnabled = arguments.get(3).getValue().getBoolValue();
 
         Dialog dialog = new DefaultDialog(name, pattern, action, isEnabled);
 

@@ -9,7 +9,11 @@ public class DefaultImageDescriptor extends BaseFigureDescriptor implements Imag
         super(display, x, y, width, 0.0f);
 
         BufferedImage image = picture.getImage();
-        super.setHeight(width * (image.getHeight() / (float)image.getWidth()));
+        float relToOriginalHeight = width * (image.getHeight() / (float)image.getWidth());
+        float finalHeight = relToOriginalHeight * display.getRenderResolution().width /
+                (float)display.getRenderResolution().height;
+
+        super.setHeight(finalHeight);
 
         this.picture = picture;
     }

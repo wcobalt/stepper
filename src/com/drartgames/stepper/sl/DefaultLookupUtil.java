@@ -9,11 +9,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class DefaultLookupUtil implements LookUpUtil {
-    private class LookupResult {
+    private class DefaultLookupResult implements LookupResult {
         Scene scene;
         String entityName;
 
-        public LookupResult(Scene scene, String entityName) {
+        public DefaultLookupResult(Scene scene, String entityName) {
             this.scene = scene;
             this.entityName = entityName;
         }
@@ -35,7 +35,7 @@ public class DefaultLookupUtil implements LookUpUtil {
 
     @Override
     public PictureResource lookupPicture(SLInterpreter interpreter, String reference) throws SLRuntimeException {
-        LookupResult result = lookup(interpreter, reference);
+        DefaultLookupResult result = lookup(interpreter, reference);
         PictureResource resource = result.getScene().getPictureResourceManager().getByName(result.entityName);
 
         if (resource == null)
@@ -46,7 +46,7 @@ public class DefaultLookupUtil implements LookUpUtil {
 
     @Override
     public AudioResource lookupAudio(SLInterpreter interpreter, String reference) throws SLRuntimeException {
-        LookupResult result = lookup(interpreter, reference);
+        DefaultLookupResult result = lookup(interpreter, reference);
         AudioResource resource = result.getScene().getAudioResourceManager().getByName(result.entityName);
 
         if (resource == null)
@@ -57,7 +57,7 @@ public class DefaultLookupUtil implements LookUpUtil {
 
     @Override
     public Action lookupAction(SLInterpreter interpreter, String reference) throws SLRuntimeException {
-        LookupResult result = lookup(interpreter, reference);
+        DefaultLookupResult result = lookup(interpreter, reference);
         Action action = result.getScene().getActionByName(result.entityName);
 
         if (action == null)
@@ -68,7 +68,7 @@ public class DefaultLookupUtil implements LookUpUtil {
 
     @Override
     public Counter lookupCounter(SLInterpreter interpreter, String reference) throws SLRuntimeException {
-        LookupResult result = lookup(interpreter, reference);
+        DefaultLookupResult result = lookup(interpreter, reference);
         Counter counter = result.getScene().getCountersManager().getByName(result.entityName);
 
         if (counter == null)
@@ -79,7 +79,7 @@ public class DefaultLookupUtil implements LookUpUtil {
 
     @Override
     public Dialog lookupDialog(SLInterpreter interpreter, String reference) throws SLRuntimeException {
-        LookupResult result = lookup(interpreter, reference);
+        DefaultLookupResult result = lookup(interpreter, reference);
         Dialog dialog = result.getScene().getDialogsManager().getByName(result.entityName);
 
         if (dialog == null)
@@ -98,12 +98,22 @@ public class DefaultLookupUtil implements LookUpUtil {
         return tag;
     }
 
-    private LookupResult lookup(SLInterpreter interpreter, String reference) throws SLRuntimeException {
+    @Override
+    public ShowingImage lookupShowingImage(SLInterpreter interpreter, String reference) throws SLRuntimeException {
+        DefaultLookupResult result = lookup(interpreter, reference);
+        ShowingImage showingImage = result.getScene().getShowingImageManager().getByName(result.entityName);
+
+        if (showingImage == null)
+            throwException(interpreter, "There's no showing image with name: " + reference, null);
+
+        return showingImage;
+    }
+
+    @Override
+    public DefaultLookupResult lookup(SLInterpreter interpreter, String reference) throws SLRuntimeException {
         Matcher matcher = lookupPattern.matcher(reference);
 
         if (matcher.find()) {
-            int groupCount = matcher.groupCount();
-
             Scene scene;
             String name;
 
@@ -122,7 +132,7 @@ public class DefaultLookupUtil implements LookUpUtil {
                     throwException(interpreter, "There's no scene with name: " + matcher.group(1), null);
             }
 
-            return new LookupResult(scene, name);
+            return new DefaultLookupResult(scene, name);
         } else
             throw new SLRuntimeException("Unable to perform lookup. Undefined syntax of the reference: " + reference);
     }

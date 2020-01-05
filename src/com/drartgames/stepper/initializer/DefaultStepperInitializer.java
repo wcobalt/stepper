@@ -390,7 +390,7 @@ public class DefaultStepperInitializer implements Initializer {
 
                                         break;
                                     case "animation":
-                                        descriptors = state.getImageDescriptors();
+                                        descriptors = state.getAnimationDescriptors();
 
                                         break;
                                     case "keyawait":
@@ -447,7 +447,7 @@ public class DefaultStepperInitializer implements Initializer {
 
                                 break;
                             default:
-                                System.out.println("Unsupported command:" + command);
+                                System.out.println("Unsupported command: " + command);
                         }
 
                         System.out.println();

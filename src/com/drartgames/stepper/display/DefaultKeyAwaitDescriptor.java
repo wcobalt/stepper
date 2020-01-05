@@ -13,11 +13,8 @@ public class DefaultKeyAwaitDescriptor extends BaseDescriptor implements KeyAwai
 
     @Override
     public void handle(int key) {
-        if (this.key == key) {
+        if (this.key == key)
             keyAwaitWork.execute(this);
-
-            setDoFree(true);
-        }
     }
 
     @Override

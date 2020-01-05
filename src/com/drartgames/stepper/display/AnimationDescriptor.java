@@ -10,5 +10,4 @@ public interface AnimationDescriptor extends Descriptor {
     boolean isLooped();
 
     void setIsLooped(boolean isLooped);
-
 }

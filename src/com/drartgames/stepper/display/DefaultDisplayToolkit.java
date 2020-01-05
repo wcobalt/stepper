@@ -9,24 +9,20 @@ public class DefaultDisplayToolkit implements DisplayToolkit {
     private DisplayToolkitState state;
 
     private Picture defaultPicture;
+    private Picture backTextPicture;
 
     private InputWork inputWork;
 
     private final static float PROMPT_GAP = 0.005f;
     private final static float PROMPT_INPUT_HEIGHT = 0.01f;
     private final static float PROMPT_EFFECTIVE_WIDTH = 0.2f;
-    private final static float PROMPT_IMAGE_WIDTH = 0.08f;
+    private final static float PROMPT_IMAGE_WIDTH = 0.15f;
 
     public DefaultDisplayToolkit(Display display) {
         this.display = display;
 
-        defaultPicture = new DefaultPicture(new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB));
-        Graphics g = defaultPicture.getImage().getGraphics();
-
-        g.setColor(Color.BLACK);
-        g.drawLine(0, 0, 0, 0);
-
-        g.dispose();
+        defaultPicture = new DefaultPicture(new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB));
+        backTextPicture = new DefaultPicture(new BufferedImage(100, 32, BufferedImage.TYPE_INT_RGB));
     }
 
     @Override
@@ -44,6 +40,8 @@ public class DefaultDisplayToolkit implements DisplayToolkit {
     @Override
     public DisplayToolkitState makeNewState() {
         ImageDescriptor backgroundImage = display.addPicture(defaultPicture, 1.0f, 0.0f, 0.0f);
+        ImageDescriptor backTextImage = display.addPicture(backTextPicture, 1.0f, 0.0f, 0.7f);
+
         TextDescriptor mainText = display.addText("", 0.99f, 0.28f, 0.005f, 0.7f);
         mainText.setWordWrap(true);
 
@@ -58,7 +56,7 @@ public class DefaultDisplayToolkit implements DisplayToolkit {
                     mainInput.setCurrentText("");
                 });
 
-        return new DefaultDisplayToolkitState(backgroundImage, mainText, mainInput, keyAwaitDescriptor, inputWork);
+        return new DefaultDisplayToolkitState(backgroundImage, mainText, mainInput, keyAwaitDescriptor, backTextImage, inputWork);
     }
 
     @Override
@@ -90,6 +88,10 @@ public class DefaultDisplayToolkit implements DisplayToolkit {
         float middleX = (1 - PROMPT_EFFECTIVE_WIDTH) / 2.0f;
         float currentY = PROMPT_GAP;
 
+        //background
+        ImageDescriptor background = display.addPicture(defaultPicture,
+                PROMPT_EFFECTIVE_WIDTH + PROMPT_GAP, middleX - PROMPT_GAP / 2, 0);
+
         //image
         ImageDescriptor image = picture != null ? display.addPicture(picture, PROMPT_IMAGE_WIDTH,
                 (1 - PROMPT_IMAGE_WIDTH) / 2.0f, currentY) : null;
@@ -111,19 +113,17 @@ public class DefaultDisplayToolkit implements DisplayToolkit {
         InputDescriptor input = inputWork != null ? display.addInput(PROMPT_EFFECTIVE_WIDTH, PROMPT_INPUT_HEIGHT,
                 middleX, currentY) : null;
 
-        currentY += input != null ? PROMPT_INPUT_HEIGHT : 0;
-        currentY += PROMPT_GAP;
+        currentY += input != null ? PROMPT_INPUT_HEIGHT + PROMPT_GAP : 0;
 
         //offset of prompt begin
         float finalY = (1 - currentY) / 2.0f;
 
-        //background
         //@fixme propm_eff_w + gap -> to const
         BufferedImage blackBackground = new BufferedImage((int)((PROMPT_EFFECTIVE_WIDTH + PROMPT_GAP) * 1000),
                 (int)(currentY * 1000), BufferedImage.TYPE_INT_RGB);
 
-        ImageDescriptor background = display.addPicture(new DefaultPicture(blackBackground),
-                PROMPT_EFFECTIVE_WIDTH + PROMPT_GAP, middleX - PROMPT_GAP / 2, finalY);
+        background.setPicture(new DefaultPicture(blackBackground));
+        background.setY(finalY);
 
         //shift prompt
         text.setY(text.getY() + finalY);

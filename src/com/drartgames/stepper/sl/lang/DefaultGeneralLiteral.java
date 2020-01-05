@@ -8,7 +8,7 @@ public class DefaultGeneralLiteral implements GeneralLiteral {
     }
 
     @Override
-    public String getStringRepresentation() {
+    public String toString() {
         return stringRepresentation;
     }
 }

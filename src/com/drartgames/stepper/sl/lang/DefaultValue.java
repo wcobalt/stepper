@@ -6,6 +6,11 @@ public class DefaultValue implements Value {
     private int integralValue;
     private GeneralLiteral generalLiteralValue;
     private float floatValue;
+    private boolean boolValue;
+
+    public DefaultValue() {
+        valueType = ValueType.NONE_LITERAL;
+    }
 
     public DefaultValue(String stringValue) {
         valueType = ValueType.STRING_LITERAL;
@@ -31,6 +36,12 @@ public class DefaultValue implements Value {
         this.floatValue = floatValue;
     }
 
+    public DefaultValue(boolean boolValue) {
+        valueType = ValueType.BOOL_LITERAL;
+
+        this.boolValue = boolValue;
+    }
+
     @Override
     public float getFloatValue() {
         return floatValue;
@@ -49,6 +60,16 @@ public class DefaultValue implements Value {
     @Override
     public int getIntegralValue() {
         return integralValue;
+    }
+
+    @Override
+    public boolean getBoolValue() {
+        return boolValue;
+    }
+
+    @Override
+    public boolean isNoneValue() {
+        return valueType == ValueType.NONE_LITERAL;
     }
 
     @Override

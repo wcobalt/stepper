@@ -11,6 +11,7 @@ public class DefaultScene implements Scene {
     private Manager<Counter> countersManager;
     private Manager<AudioResource> audioResourcesManager;
     private Manager<PictureResource> pictureResourcesManager;
+    private Manager<ShowingImage> showingImageManager;
 
     public DefaultScene(String name, List<Action> actions) {
         this.name = name;
@@ -20,6 +21,7 @@ public class DefaultScene implements Scene {
         countersManager = new DefaultManager<>();
         audioResourcesManager = new DefaultManager<>();
         pictureResourcesManager = new DefaultManager<>();
+        showingImageManager = new DefaultManager<>();
     }
 
     @Override
@@ -60,5 +62,10 @@ public class DefaultScene implements Scene {
     @Override
     public Manager<PictureResource> getPictureResourceManager() {
         return pictureResourcesManager;
+    }
+
+    @Override
+    public Manager<ShowingImage> getShowingImageManager() {
+        return showingImageManager;
     }
 }

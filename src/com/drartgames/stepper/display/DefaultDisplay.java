@@ -426,7 +426,7 @@ public class DefaultDisplay implements JFrameDisplay {
         }
 
         for (int i = removeList.size() - 1; i >= 0; i--)
-            descriptors.remove(removeList.get(i));
+            descriptors.remove(removeList.get(i).intValue());
     }
 
     private void renderImages() {

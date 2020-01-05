@@ -108,7 +108,13 @@ public class SLParser implements Parser {
                 if (i == 0 && ch == MINUS) {
                     tokenMatch = TokenMatch.PROBABLE_MATCH;
                 } else if (ch >= '0' && ch <= '9') {
-                    tokenMatch = TokenMatch.FULL_MATCH;
+                    if (doParseFloat) {
+                        if (wasPoint)
+                            tokenMatch = TokenMatch.FULL_MATCH;
+                        else
+                            tokenMatch = TokenMatch.PROBABLE_MATCH;
+                    } else
+                        tokenMatch = TokenMatch.FULL_MATCH;
                 } else if (doParseFloat && ch == '.' && !wasPoint && i != 0) {
                     if (i != length - 1)
                         tokenMatch = TokenMatch.FULL_MATCH;
