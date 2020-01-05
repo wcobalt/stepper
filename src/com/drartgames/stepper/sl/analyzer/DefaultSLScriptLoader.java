@@ -58,6 +58,10 @@ public class DefaultSLScriptLoader implements SLScriptLoader {
                 CallExternOperatorProcessor.CALL_EXTERN_ID, CallExternOperatorProcessor.ARGS_COUNT));
         statementAnalyzers.add(new ConditionalStatementAnalyzer("if_counter",
                 IfCounterOperatorProcessor.IF_COUNTER_ID, IfCounterOperatorProcessor.ARGS_COUNT, ELSE_KEYWORD));
+        statementAnalyzers.add(new SingleStatementAnalyzer("show_motion",
+                ShowMotionOperatorProcessor.SHOW_MOTION_ID, ShowMotionOperatorProcessor.ARGS_COUNT));
+        statementAnalyzers.add(new SingleStatementAnalyzer("animate",
+                AnimateOperatorProcessor.ANIMATE_ID, AnimateOperatorProcessor.ARGS_COUNT));
     }
 
     @Override

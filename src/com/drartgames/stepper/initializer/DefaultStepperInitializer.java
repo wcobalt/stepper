@@ -390,7 +390,7 @@ public class DefaultStepperInitializer implements Initializer {
 
                                         break;
                                     case "animation":
-                                        descriptors = state.getImageDescriptors();
+                                        descriptors = state.getAnimationDescriptors();
 
                                         break;
                                     case "keyawait":

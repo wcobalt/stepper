@@ -19,7 +19,7 @@ public class CallExternOperatorProcessor extends BaseProcessor {
 
     @Override
     public void execute(SLInterpreter interpreter, Operator operator) throws SLRuntimeException {
-        checkArguments(operator, ValueType.GENERAL_LITERAL, ValueType.GENERAL_LITERAL);
+        checkArguments(operator, false, ValueType.GENERAL_LITERAL, ValueType.GENERAL_LITERAL);
 
         List<Argument> arguments = operator.getArguments();
 

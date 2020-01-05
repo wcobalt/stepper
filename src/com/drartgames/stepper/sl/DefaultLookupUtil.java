@@ -99,6 +99,17 @@ public class DefaultLookupUtil implements LookUpUtil {
     }
 
     @Override
+    public ShowingImage lookupShowingImage(SLInterpreter interpreter, String reference) throws SLRuntimeException {
+        DefaultLookupResult result = lookup(interpreter, reference);
+        ShowingImage showingImage = result.getScene().getShowingImageManager().getByName(result.entityName);
+
+        if (showingImage == null)
+            throwException(interpreter, "There's no showing image with name: " + reference, null);
+
+        return showingImage;
+    }
+
+    @Override
     public DefaultLookupResult lookup(SLInterpreter interpreter, String reference) throws SLRuntimeException {
         Matcher matcher = lookupPattern.matcher(reference);
 

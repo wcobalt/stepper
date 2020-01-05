@@ -1,17 +1,18 @@
-package com.drartgames.stepper.display;
+package com.drartgames.stepper.display.animations;
 
-public class SimpleAnimation implements Animation {
+import com.drartgames.stepper.display.ImageDescriptor;
+
+public class MotionAnimation extends BaseAnimation {
     private static final int FORWARD_DIRECTION = 1;
     private static final int REVERSE_DIRECTION = -1;
 
     private int duration;
     private int currentTime;
     private int modifier = FORWARD_DIRECTION;
-    private float initX, initY;
     private float amplitude;
     private boolean isVertical;
 
-    public SimpleAnimation(int duration, float amplitude, boolean isVertical) {
+    public MotionAnimation(int duration, float amplitude, boolean isVertical) {
         this.duration = duration;
         this.amplitude = amplitude;
         this.isVertical = isVertical;
@@ -47,19 +48,7 @@ public class SimpleAnimation implements Animation {
 
     @Override
     public void loopEnded() {
-        modifier = modifier == FORWARD_DIRECTION ? REVERSE_DIRECTION : FORWARD_DIRECTION;
+        modifier = (modifier == FORWARD_DIRECTION ? REVERSE_DIRECTION : FORWARD_DIRECTION);
         currentTime = 0;
-    }
-
-    @Override
-    public void setInitPos(ImageDescriptor imageDescriptor) {
-        initX = imageDescriptor.getX();
-        initY = imageDescriptor.getY();
-    }
-
-    @Override
-    public void backToInitPos(ImageDescriptor imageDescriptor) {
-        imageDescriptor.setX(initX);
-        imageDescriptor.setY(initY);
     }
 }

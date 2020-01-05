@@ -5,7 +5,6 @@ import com.drartgames.stepper.sl.DefaultLookupUtil;
 import com.drartgames.stepper.sl.LookUpUtil;
 import com.drartgames.stepper.sl.lang.Argument;
 import com.drartgames.stepper.sl.lang.Operator;
-import com.drartgames.stepper.sl.lang.Value;
 import com.drartgames.stepper.sl.lang.ValueType;
 
 import java.util.List;
@@ -25,18 +24,18 @@ public abstract class BaseProcessor implements OperatorProcessor {
         return operatorId;
     }
 
-    protected void checkArguments(Operator operator, ValueType... types) throws SLRuntimeException  {
+    protected void checkArguments(Operator operator, boolean doIgnoreArgumentsCount, ValueType... types) throws SLRuntimeException  {
         List<Argument> arguments = operator.getArguments();
 
-        if (checkArgumentsCount(operator, types.length)) {
+        if (doIgnoreArgumentsCount || checkArgumentsCount(operator, types.length)) {
             int i = 0;
 
-            for (Argument argument : arguments) {
-                ValueType valueType = argument.getValue().getValueType();
+            for (ValueType type : types) {
+                ValueType valueType = arguments.get(i).getValue().getValueType();
 
-                if (valueType != types[i])
+                if (valueType != type)
                     throw new SLRuntimeException(i + "th argument type mismatch: " +
-                            typeName(types[i]) + " expected, " + typeName(valueType) + " found");
+                            typeName(type) + " expected, " + typeName(valueType) + " found");
 
                 i++;
             }

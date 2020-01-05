@@ -15,7 +15,7 @@ public class SetTextOperatorProcessor extends BaseProcessor {
 
     @Override
     public void execute(SLInterpreter interpreter, Operator operator) throws SLRuntimeException {
-        checkArguments(operator, ValueType.STRING_LITERAL);
+        checkArguments(operator, false, ValueType.STRING_LITERAL);
 
         String text = operator.getArguments().get(0).getValue().getStringValue();
 

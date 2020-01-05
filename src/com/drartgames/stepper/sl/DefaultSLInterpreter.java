@@ -96,6 +96,8 @@ public class DefaultSLInterpreter implements SLInterpreter {
         addOperatorProcessor(new CounterAddOperatorProcessor());
         addOperatorProcessor(new CallExternOperatorProcessor());
         addOperatorProcessor(new IfCounterOperatorProcessor());
+        addOperatorProcessor(new ShowMotionOperatorProcessor());
+        addOperatorProcessor(new AnimateOperatorProcessor());
     }
 
     private void addOperatorProcessor(OperatorProcessor operatorProcessor) {

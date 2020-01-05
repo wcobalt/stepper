@@ -3,7 +3,6 @@ package com.drartgames.stepper.sl.processors;
 import com.drartgames.stepper.exceptions.SLRuntimeException;
 import com.drartgames.stepper.sl.SLInterpreter;
 import com.drartgames.stepper.sl.lang.ConditionalOperator;
-import com.drartgames.stepper.sl.lang.Operator;
 import com.drartgames.stepper.sl.lang.ValueType;
 import com.drartgames.stepper.sl.lang.memory.Tag;
 
@@ -22,7 +21,7 @@ public class IfTagOperatorProcessor extends BaseConditionalProcessor {
 
     @Override
     protected boolean calculateCondition(SLInterpreter interpreter, ConditionalOperator operator) throws SLRuntimeException {
-        checkArguments(operator, ValueType.STRING_LITERAL);
+        checkArguments(operator, false, ValueType.STRING_LITERAL);
 
         String tagName = operator.getArguments().get(0).getValue().getStringValue();
 

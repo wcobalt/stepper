@@ -29,7 +29,7 @@ public class LoadImageOperatorProcessor extends BaseProcessor {
 
     @Override
     public void execute(SLInterpreter interpreter, Operator operator) throws SLRuntimeException {
-        checkArguments(operator, ValueType.STRING_LITERAL, ValueType.STRING_LITERAL);
+        checkArguments(operator, false, ValueType.STRING_LITERAL, ValueType.STRING_LITERAL);
 
         List<Argument> arguments = operator.getArguments();
 
