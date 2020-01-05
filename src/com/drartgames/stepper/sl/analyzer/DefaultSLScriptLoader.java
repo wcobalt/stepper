@@ -42,14 +42,26 @@ public class DefaultSLScriptLoader implements SLScriptLoader {
                 ShowOperatorProcessor.SHOW_ID, ShowOperatorProcessor.ARGS_COUNT));
         statementAnalyzers.add(new SingleStatementAnalyzer("tag",
                 TagOperatorProcessor.TAG_ID, TagOperatorProcessor.ARGS_COUNT));
-        statementAnalyzers.add(new SingleStatementAnalyzer("disable_dialog",
-                DisableDialogOperatorProcessor.DISABLE_DIALOG_ID, DisableDialogOperatorProcessor.ARGS_COUNT));
-        statementAnalyzers.add(new SingleStatementAnalyzer("enable_dialog",
-                EnableDialogOperatorProcessor.ENABLE_DIALOG_ID, EnableDialogOperatorProcessor.ARGS_COUNT));
+        statementAnalyzers.add(new SingleStatementAnalyzer("switch_dialog",
+                SwitchDialogOperatorProcessor.SWITCH_DIALOG_ID, SwitchDialogOperatorProcessor.ARGS_COUNT));
+        statementAnalyzers.add(new SingleStatementAnalyzer("goto",
+                GotoOperatorProcessor.GOTO_ID, GotoOperatorProcessor.ARGS_COUNT));
         statementAnalyzers.add(new SingleStatementAnalyzer("add_dialog",
                 AddDialogOperatorProcessor.ADD_DIALOG_ID, AddDialogOperatorProcessor.ARGS_COUNT));
         statementAnalyzers.add(new SingleStatementAnalyzer("call",
                 CallOperatorProcessor.CALL_ID, CallOperatorProcessor.ARGS_COUNT));
+        statementAnalyzers.add(new SingleStatementAnalyzer("counter_set",
+                CounterSetOperatorProcessor.COUNTER_SET_ID, CounterSetOperatorProcessor.ARGS_COUNT));
+        statementAnalyzers.add(new SingleStatementAnalyzer("counter_add",
+                CounterAddOperatorProcessor.COUNTER_ADD_ID, CounterAddOperatorProcessor.ARGS_COUNT));
+        statementAnalyzers.add(new SingleStatementAnalyzer("call_extern",
+                CallExternOperatorProcessor.CALL_EXTERN_ID, CallExternOperatorProcessor.ARGS_COUNT));
+        statementAnalyzers.add(new ConditionalStatementAnalyzer("if_counter",
+                IfCounterOperatorProcessor.IF_COUNTER_ID, IfCounterOperatorProcessor.ARGS_COUNT, ELSE_KEYWORD));
+        statementAnalyzers.add(new SingleStatementAnalyzer("show_motion",
+                ShowMotionOperatorProcessor.SHOW_MOTION_ID, ShowMotionOperatorProcessor.ARGS_COUNT));
+        statementAnalyzers.add(new SingleStatementAnalyzer("animate",
+                AnimateOperatorProcessor.ANIMATE_ID, AnimateOperatorProcessor.ARGS_COUNT));
     }
 
     @Override

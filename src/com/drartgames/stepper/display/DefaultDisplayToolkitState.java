@@ -1,19 +1,20 @@
 package com.drartgames.stepper.display;
 
 public class DefaultDisplayToolkitState implements DisplayToolkitState {
-    private ImageDescriptor backgroundImage;
+    private ImageDescriptor backgroundImage, backTextImage;
     private TextDescriptor mainText;
     private InputDescriptor mainInput;
     private InputWork inputWork;
     private KeyAwaitDescriptor keyAwaitDescriptor;
 
     public DefaultDisplayToolkitState(ImageDescriptor backgroundImage, TextDescriptor mainText, InputDescriptor mainInput,
-                                      KeyAwaitDescriptor keyAwaitDescriptor, InputWork inputWork) {
+                                      KeyAwaitDescriptor keyAwaitDescriptor, ImageDescriptor backText, InputWork inputWork) {
         this.backgroundImage = backgroundImage;
         this.mainText = mainText;
         this.mainInput = mainInput;
         this.keyAwaitDescriptor = keyAwaitDescriptor;
         this.inputWork = inputWork;
+        this.backTextImage = backText;
     }
 
     @Override
@@ -39,5 +40,10 @@ public class DefaultDisplayToolkitState implements DisplayToolkitState {
     @Override
     public InputWork getInputWork() {
         return inputWork;
+    }
+
+    @Override
+    public ImageDescriptor getBackTextDescriptor() {
+        return backTextImage;
     }
 }

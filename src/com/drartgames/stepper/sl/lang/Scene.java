@@ -19,4 +19,6 @@ public interface Scene {
     Manager<AudioResource> getAudioResourceManager();
 
     Manager<PictureResource> getPictureResourceManager();
+
+    Manager<ShowingImage> getShowingImageManager();
 }

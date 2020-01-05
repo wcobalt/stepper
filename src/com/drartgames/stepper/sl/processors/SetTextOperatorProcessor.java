@@ -5,7 +5,7 @@ import com.drartgames.stepper.sl.SLInterpreter;
 import com.drartgames.stepper.sl.lang.Operator;
 import com.drartgames.stepper.sl.lang.ValueType;
 
-public class SetTextOperatorProcessor extends BaseProcessor implements OperatorProcessor {
+public class SetTextOperatorProcessor extends BaseProcessor {
     public static final int SET_TEXT_ID = 3;
     public static final int ARGS_COUNT = 1;
 
@@ -15,7 +15,7 @@ public class SetTextOperatorProcessor extends BaseProcessor implements OperatorP
 
     @Override
     public void execute(SLInterpreter interpreter, Operator operator) throws SLRuntimeException {
-        checkArguments(operator, ValueType.STRING_LITERAL);
+        checkArguments(operator, false, ValueType.STRING_LITERAL);
 
         String text = operator.getArguments().get(0).getValue().getStringValue();
 

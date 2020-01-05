@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class LoadImageOperatorProcessor extends BaseProcessor implements OperatorProcessor {
+public class LoadImageOperatorProcessor extends BaseProcessor {
     private static final Logger logger = Logger.getLogger(LoadImageOperatorProcessor.class.getName());
 
     public static final int LOAD_IMAGE_ID = 1;
@@ -29,7 +29,7 @@ public class LoadImageOperatorProcessor extends BaseProcessor implements Operato
 
     @Override
     public void execute(SLInterpreter interpreter, Operator operator) throws SLRuntimeException {
-        checkArguments(operator, ValueType.STRING_LITERAL, ValueType.STRING_LITERAL);
+        checkArguments(operator, false, ValueType.STRING_LITERAL, ValueType.STRING_LITERAL);
 
         List<Argument> arguments = operator.getArguments();
 

@@ -7,7 +7,7 @@ import com.drartgames.stepper.sl.lang.ValueType;
 import com.drartgames.stepper.sl.lang.memory.DefaultTag;
 import com.drartgames.stepper.sl.lang.memory.Tag;
 
-public class TagOperatorProcessor extends BaseProcessor implements OperatorProcessor {
+public class TagOperatorProcessor extends BaseProcessor {
     public static final int TAG_ID = 9;
     public static final int ARGS_COUNT = 1;
 
@@ -17,7 +17,7 @@ public class TagOperatorProcessor extends BaseProcessor implements OperatorProce
 
     @Override
     public void execute(SLInterpreter interpreter, Operator operator) throws SLRuntimeException {
-        checkArguments(operator, ValueType.STRING_LITERAL);
+        checkArguments(operator, false, ValueType.STRING_LITERAL);
 
         String tagName = operator.getArguments().get(0).getValue().getStringValue();
         Tag tag = new DefaultTag(tagName);
