@@ -3,8 +3,9 @@ package com.drartgames.stepper.sl.lang;
 public class DefaultValue implements Value {
     private ValueType valueType;
     private String stringValue;
-    private int numericValue;
+    private int integralValue;
     private GeneralLiteral generalLiteralValue;
+    private float floatValue;
 
     public DefaultValue(String stringValue) {
         valueType = ValueType.STRING_LITERAL;
@@ -12,16 +13,27 @@ public class DefaultValue implements Value {
         this.stringValue = stringValue;
     }
 
-    public DefaultValue(int numericValue) {
-        valueType = ValueType.NUMBER_LITERAL;
+    public DefaultValue(int integralValue) {
+        valueType = ValueType.INTEGRAL_LITERAL;
 
-        this.numericValue = numericValue;
+        this.integralValue = integralValue;
     }
 
     public DefaultValue(GeneralLiteral generalLiteralValue) {
         valueType = ValueType.GENERAL_LITERAL;
 
         this.generalLiteralValue = generalLiteralValue;
+    }
+
+    public DefaultValue(float floatValue) {
+        valueType = ValueType.FLOAT_LITERAL;
+
+        this.floatValue = floatValue;
+    }
+
+    @Override
+    public float getFloatValue() {
+        return floatValue;
     }
 
     @Override
@@ -35,8 +47,8 @@ public class DefaultValue implements Value {
     }
 
     @Override
-    public int getNumericValue() {
-        return numericValue;
+    public int getIntegralValue() {
+        return integralValue;
     }
 
     @Override

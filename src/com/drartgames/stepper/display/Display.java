@@ -7,17 +7,17 @@ import java.awt.*;
 public interface Display {
     ImageDescriptor addPicture(Picture picture, float width, float x, float y);
 
-    AudioDescriptor addAudio(Audio audio, boolean isLooped);
+    AudioDescriptor addAudio(Audio audio, boolean isLooped, DescriptorWork audioEndWork);
 
-    AnimationDescriptor addAnimation(ImageDescriptor imageDescriptor, Animation animation, boolean isLooped, boolean doReturnBack);
+    AnimationDescriptor addAnimation(ImageDescriptor imageDescriptor, Animation animation, boolean isLooped, DescriptorWork animationEndWork);
 
     TextDescriptor addText(String message, float width, float height, float x, float y);
 
     InputDescriptor addInput(float width, float height, float x, float y);
 
-    KeyAwaitDescriptor awaitForKey(int key, KeyAwaitWork keyAwaitWork);
+    KeyAwaitDescriptor awaitForKey(int key, DescriptorWork keyAwaitWork);
 
-    PostWorkDescriptor addWork(PostWork work);
+    PostWorkDescriptor addWork(DescriptorWork work);
 
     void run();
 

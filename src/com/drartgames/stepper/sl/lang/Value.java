@@ -5,7 +5,9 @@ public interface Value {
 
     String getStringValue();
 
-    int getNumericValue();
+    int getIntegralValue();
+
+    float getFloatValue();
 
     GeneralLiteral getGeneralLiteralValue();
 }

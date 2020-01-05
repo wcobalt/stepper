@@ -47,7 +47,7 @@ public abstract class BaseProcessor implements OperatorProcessor {
 
     private String typeName(ValueType valueType) {
         switch (valueType) {
-            case NUMBER_LITERAL:
+            case INTEGRAL_LITERAL:
                 return "<number_literal>";
             case STRING_LITERAL:
                 return "<string_literal>";

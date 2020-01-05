@@ -88,8 +88,8 @@ public class DefaultDisplay implements JFrameDisplay {
     }
 
     @Override
-    public AudioDescriptor addAudio(Audio audio, boolean isLooped) {
-        AudioDescriptor audioDescriptor = new DefaultAudioDescriptor(this, audio, isLooped);
+    public AudioDescriptor addAudio(Audio audio, boolean isLooped, DescriptorWork audioEndWork) {
+        AudioDescriptor audioDescriptor = new DefaultAudioDescriptor(this, audio, isLooped, audioEndWork);
 
         state.getAudioDescriptors().add(audioDescriptor);
 
@@ -98,9 +98,9 @@ public class DefaultDisplay implements JFrameDisplay {
 
     @Override
     public AnimationDescriptor addAnimation(ImageDescriptor imageDescriptor, Animation animation, boolean isLooped,
-                                            boolean doReturnBack) {
+                                            DescriptorWork animationEndWork) {
         AnimationDescriptor animationDescriptor = new DefaultAnimationDescriptor(this, imageDescriptor, animation,
-                isLooped, doReturnBack);
+                isLooped, animationEndWork);
 
         state.getAnimationDescriptors().add(animationDescriptor);
         animationDescriptor.getAnimation().setInitPos(imageDescriptor);
@@ -127,7 +127,7 @@ public class DefaultDisplay implements JFrameDisplay {
     }
 
     @Override
-    public KeyAwaitDescriptor awaitForKey(int key, KeyAwaitWork keyAwaitWork) {
+    public KeyAwaitDescriptor awaitForKey(int key, DescriptorWork keyAwaitWork) {
         KeyAwaitDescriptor keyAwaiterDescriptor = new DefaultKeyAwaitDescriptor(this, key, keyAwaitWork);
 
         state.getKeyAwaitDescriptors().add(keyAwaiterDescriptor);
@@ -136,7 +136,7 @@ public class DefaultDisplay implements JFrameDisplay {
     }
 
     @Override
-    public PostWorkDescriptor addWork(PostWork work) {
+    public PostWorkDescriptor addWork(DescriptorWork work) {
         PostWorkDescriptor postWorkDescriptor = new DefaultPostWorkDescriptor(this, work);
 
         state.getWorkDescriptors().add(postWorkDescriptor);
@@ -380,75 +380,53 @@ public class DefaultDisplay implements JFrameDisplay {
         }
 
         List<KeyAwaitDescriptor> keyAwaits = state.getKeyAwaitDescriptors();
-        List<Integer> removeList = new ArrayList<>();
 
-        int initialSize = keyAwaits.size();
-
-        for (int i = 0; i < initialSize; i++) {
-            KeyAwaitDescriptor descriptor = keyAwaits.get(i);
-
-            if (descriptor.getKey() == keyCode) {
-                descriptor.getWork().execute(descriptor);
-
-                if (descriptor.doFree())
-                    removeList.add(i);
-            }
-        }
-
-        for (int i = removeList.size() - 1; i >= 0; i--)
-            keyAwaits.remove(removeList.get(i));
+        handleWithRemove(keyAwaits, descriptor ->
+            descriptor.handle(keyCode)
+        );
     }
 
     private void doWork() {
-        //@fixme it's no good that code like this is repeated everywhere in Display code
         List<PostWorkDescriptor> postWorks = state.getWorkDescriptors();
+
+        handleWithRemove(postWorks, PostWorkDescriptor::execute);
+    }
+
+    private void handleAudios() {
+        List<AudioDescriptor> audios = state.getAudioDescriptors();
+
+        handleWithRemove(audios, AudioDescriptor::update);
+    }
+
+    private void handleAnimations(long deltaTime) {
+        //@fixme animation processing may take some time too
+        List<AnimationDescriptor> animations = state.getAnimationDescriptors();
+
+        handleWithRemove(animations, descriptor -> {
+            descriptor.update(deltaTime);
+        });
+    }
+
+    private interface HandleDescriptorWork<T extends Descriptor> {
+        void handle(T descriptor);
+    }
+
+    private <T extends Descriptor> void handleWithRemove(List<T> descriptors, HandleDescriptorWork<T> work) {
         List<Integer> removeList = new ArrayList<>();
 
-        int initialSize = postWorks.size();
+        int initialSize = descriptors.size();
 
         for (int i = 0; i < initialSize; i++) {
-            PostWorkDescriptor descriptor = postWorks.get(i);
+            T descriptor = descriptors.get(i);
 
-            descriptor.getWork().execute(descriptor);
+            work.handle(descriptor);
 
             if (descriptor.doFree())
                 removeList.add(i);
         }
 
         for (int i = removeList.size() - 1; i >= 0; i--)
-            postWorks.remove(removeList.get(i));
-    }
-
-    private void handleAudios() {
-        Iterator<AudioDescriptor> iterator = state.getAudioDescriptors().iterator();
-
-        while (iterator.hasNext()) {
-            AudioDescriptor descriptor = iterator.next();
-
-            if (descriptor.doFree())
-                iterator.remove();
-        }
-    }
-
-    private void handleAnimations(long deltaTime) {
-        Iterator<AnimationDescriptor> iterator = state.getAnimationDescriptors().iterator();
-
-        while (iterator.hasNext()) {
-            AnimationDescriptor descriptor = iterator.next();
-
-            boolean isEnded = descriptor.getAnimation().update(descriptor.getImageDescriptor(), deltaTime);
-
-            if (isEnded) {
-                if (descriptor.isLooped())
-                    descriptor.getAnimation().loopEnded();
-                else {
-                    if (descriptor.doReturnBack())
-                        descriptor.getAnimation().backToInitPos(descriptor.getImageDescriptor());
-
-                    iterator.remove();
-                }
-            }
-        }
+            descriptors.remove(removeList.get(i));
     }
 
     private void renderImages() {

@@ -3,16 +3,32 @@ package com.drartgames.stepper.display;
 public class DefaultAnimationDescriptor extends BaseDescriptor implements AnimationDescriptor {
     private ImageDescriptor imageDescriptor;
     private Animation animation;
-    private boolean isLooped, doReturnBack;
+    private boolean isLooped;
+    private DescriptorWork animationEndWork;
 
     public DefaultAnimationDescriptor(Display display, ImageDescriptor imageDescriptor, Animation animation,
-                                      boolean isLooped, boolean doReturnBack) {
+                                      boolean isLooped, DescriptorWork animationEndWork) {
         super(display);
 
         this.imageDescriptor = imageDescriptor;
         this.animation = animation;
         this.isLooped = isLooped;
-        this.doReturnBack = doReturnBack;
+        this.animationEndWork = animationEndWork;
+    }
+
+    @Override
+    public void update(long milliseconds) {
+        boolean result = animation.update(imageDescriptor, milliseconds);
+
+        if (result && animationEndWork != null) {
+            if (isLooped) {
+                animation.loopEnded();
+            } else {
+                animationEndWork.execute(this);
+
+                setDoFree(true);
+            }
+        }
     }
 
     @Override
@@ -36,12 +52,7 @@ public class DefaultAnimationDescriptor extends BaseDescriptor implements Animat
     }
 
     @Override
-    public boolean doReturnBack() {
-        return doReturnBack;
-    }
-
-    @Override
     public String toString() {
-        return "L: " + isLooped + " R: " + doReturnBack + " I:\n   " + imageDescriptor.toString();
+        return "L: " + isLooped + " I:\n   " + imageDescriptor.toString();
     }
 }
