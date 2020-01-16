@@ -300,7 +300,7 @@ public class DefaultStepperInitializer implements Initializer {
 
         ImageDescriptor splashScreenDescriptor = display.addPicture(splashScreen, 1.0f, 0.0f, 0.0f);
         ImageDescriptor loadingIconDescriptor = display.addPicture(loadingPicture, 0.04f, 0.94f, 0.9f);
-        TextDescriptor textDescriptor = display.addText("Загрузка скриптов", 0.1f, 1.0f, 0.83f, 0.92f);
+        TextDescriptor textDescriptor = display.addText("Загрузка скриптов", 0.12f, 1.0f, 0.82f, 0.92f);
 
         String pathToScenes = questsDirectory.getAbsolutePath() + "/" + questName + "/" + SCENES_PATH;
         scriptLoaderFacade.load(interpreter, new File(pathToScenes), (event) -> {
@@ -422,7 +422,6 @@ public class DefaultStepperInitializer implements Initializer {
 
                                 try {
                                     Scene scene = scriptLoader.load(fullScene).get(0);
-                                    Action action = scene.getActionByName("__auto_act");
 
                                     display.addWork((descriptor) -> {
                                         try {
