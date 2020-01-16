@@ -5,6 +5,7 @@ import com.drartgames.stepper.display.AnimationDescriptor;
 import com.drartgames.stepper.display.ImageDescriptor;
 import com.drartgames.stepper.display.animations.MotionToPointAnimation;
 import com.drartgames.stepper.exceptions.SLRuntimeException;
+import com.drartgames.stepper.sl.LookupResult;
 import com.drartgames.stepper.sl.SLInterpreter;
 import com.drartgames.stepper.sl.lang.*;
 import com.drartgames.stepper.sl.lang.memory.DefaultShowingImage;
@@ -36,10 +37,10 @@ public class ShowMotionOperatorProcessor extends BaseProcessor {
         List<Argument> arguments = operator.getArguments();
 
         String showingImageName = arguments.get(0).getValue().getStringValue();
-        PictureResource pictureResource = lookUpUtil.lookupPicture(interpreter, arguments.get(1).getValue().getStringValue());
 
-        //@todo numbers of arguments to consts
-        float width = arguments.get(2).getValue().getFloatValue();
+        LookupResult lookupResult = lookUpUtil.lookup(interpreter, showingImageName);
+        ShowingImage showingImage = lookupResult.getScene().getShowingImageManager().getByName(lookupResult.getEntityName());
+
         float x0 = arguments.get(3).getValue().getFloatValue();
         float y0 = arguments.get(4).getValue().getFloatValue();
         float x1 = arguments.get(5).getValue().getFloatValue();
@@ -54,8 +55,28 @@ public class ShowMotionOperatorProcessor extends BaseProcessor {
                 ? lookUpUtil.lookupAction(interpreter, callbackValue.getGeneralLiteralValue().toString())
                 : null);
 
-        ImageDescriptor imageDescriptor = interpreter.getDisplay().addPicture(pictureResource.getPicture(),
-                width, x0, y0);
+        ImageDescriptor imageDescriptor;
+
+        if (showingImage == null) {
+            PictureResource pictureResource = lookUpUtil.lookupPicture(interpreter, arguments.get(1).getValue().getStringValue());
+
+            //@todo numbers of arguments to consts
+            float width = arguments.get(2).getValue().getFloatValue();
+
+            imageDescriptor = interpreter.getDisplay().addPicture(pictureResource.getPicture(),
+                    width, x0, y0);
+
+            showingImage = new DefaultShowingImage(showingImageName, imageDescriptor, null);
+            interpreter.getScenesManager().getCurrentScene().getShowingImageManager().add(showingImage);
+        } else {
+            imageDescriptor = showingImage.getImage();
+
+            imageDescriptor.setX(x0);
+            imageDescriptor.setY(y0);
+
+            showingImage.getCurrentAnimation().setDoFree(true);//@fixme it will continue to move for one more tick
+        }
+
         Animation animation = new MotionToPointAnimation(duration, x1, y1);
         animation.setInitPos(imageDescriptor);
         AnimationDescriptor animationDescriptor = interpreter.getDisplay().addAnimation(imageDescriptor, animation,
@@ -71,7 +92,6 @@ public class ShowMotionOperatorProcessor extends BaseProcessor {
                     }
                 });
 
-        ShowingImage showingImage = new DefaultShowingImage(showingImageName, imageDescriptor, animationDescriptor);
-        interpreter.getScenesManager().getCurrentScene().getShowingImageManager().add(showingImage);
+        showingImage.setCurrentAnimation(animationDescriptor);
     }
 }

@@ -15,7 +15,7 @@ public class DefaultDisplayToolkit implements DisplayToolkit {
 
     private final static float PROMPT_GAP = 0.005f;
     private final static float PROMPT_INPUT_HEIGHT = 0.01f;
-    private final static float PROMPT_EFFECTIVE_WIDTH = 0.2f;
+    private final static float PROMPT_EFFECTIVE_WIDTH = 0.26f;
     private final static float PROMPT_IMAGE_WIDTH = 0.15f;
 
     public DefaultDisplayToolkit(Display display) {
@@ -116,11 +116,12 @@ public class DefaultDisplayToolkit implements DisplayToolkit {
         currentY += input != null ? PROMPT_INPUT_HEIGHT + PROMPT_GAP : 0;
 
         //offset of prompt begin
-        float finalY = (1 - currentY) / 2.0f;
+        float finalY = (1 - 0.28f - currentY) / 2.0f;
 
+        Dimension resolution = display.getRenderResolution();
         //@fixme propm_eff_w + gap -> to const
-        BufferedImage blackBackground = new BufferedImage((int)((PROMPT_EFFECTIVE_WIDTH + PROMPT_GAP) * 1000),
-                (int)(currentY * 1000), BufferedImage.TYPE_INT_RGB);
+        BufferedImage blackBackground = new BufferedImage((int)((PROMPT_EFFECTIVE_WIDTH + PROMPT_GAP) * resolution.width),
+                (int)(currentY * resolution.height), BufferedImage.TYPE_INT_RGB);
 
         background.setPicture(new DefaultPicture(blackBackground));
         background.setY(finalY);

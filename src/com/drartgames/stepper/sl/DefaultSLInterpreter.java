@@ -20,7 +20,7 @@ import java.util.logging.Logger;
 public class DefaultSLInterpreter implements SLInterpreter {
     private static final Logger logger = Logger.getLogger(DefaultSLInterpreter.class.getName());
 
-    public static final Version SL_VERSION = new DefaultVersion("1.1.0:0");;
+    public static final Version SL_VERSION = new DefaultVersion("1.1.1:0");;
     private Display display;
     private DisplayToolkit toolkit;
     private ScenesManager scenesManager;
@@ -31,6 +31,7 @@ public class DefaultSLInterpreter implements SLInterpreter {
 
     public static final String INIT_ACTION_NAME = "init";
     public static final String FIRST_COME_ACTION_NAME = "first_come";
+    public static final String COME_ACTION_NAME = "come";
 
     public static final int IMMEDIATE_RETURN_FLAG = 0x1;
     public static final float MATCH_THRESHOLD = 0.2f;
@@ -98,6 +99,7 @@ public class DefaultSLInterpreter implements SLInterpreter {
         addOperatorProcessor(new IfCounterOperatorProcessor());
         addOperatorProcessor(new ShowMotionOperatorProcessor());
         addOperatorProcessor(new AnimateOperatorProcessor());
+        addOperatorProcessor(new StopAllOperatorProcessor());
     }
 
     private void addOperatorProcessor(OperatorProcessor operatorProcessor) {
@@ -205,6 +207,8 @@ public class DefaultSLInterpreter implements SLInterpreter {
         muteAudio(true, display.getDisplayState());
         scenesManager.setCurrentScene(scene);
 
+        Action come = scene.getActionByName(COME_ACTION_NAME);
+
         if (cacheEntry != null) {
             DisplayState newDisplayState = cacheEntry.getDisplayState();
             DisplayToolkitState newDisplayToolkitState = cacheEntry.getToolkitState();
@@ -213,6 +217,13 @@ public class DefaultSLInterpreter implements SLInterpreter {
                 toolkit.setState(newDisplayToolkitState);
 
                 muteAudio(false, display.getDisplayState());
+
+                try {
+                    if (come != null)
+                        executeAction(come);
+                } catch (SLRuntimeException exc) {
+                    logger.log(Level.SEVERE, "Runtime exception, when executing `" + come.getName() + "` or action", exc);
+                }
             });
         } else {
             DisplayState newDisplayState = new DefaultDisplayState();
@@ -227,8 +238,12 @@ public class DefaultSLInterpreter implements SLInterpreter {
 
                 try {
                     executeAction(firstCome);
+
+                    if (come != null)
+                        executeAction(come);
                 } catch (SLRuntimeException exc) {
-                    logger.log(Level.SEVERE, "Runtime exception, when executing `" + firstCome.getName() + "` action", exc);
+                    logger.log(Level.SEVERE, "Runtime exception, when executing `" + firstCome.getName() +
+                            "` or `" + (come != null ? come.getName() : "") + "` action", exc);
                 }
             });
         }
