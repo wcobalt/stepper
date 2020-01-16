@@ -1,7 +1,7 @@
 Supported parameters:
 
 -h --help --- shows help
--v --SL_VERSION --- shows version of Stepper
+-v --version --- shows version of Stepper
 -q --quest "<quest_name>" --- sets name of quest to be loaded
 -d --quests-dir "<quests_dir>" --- sets directory (relative to work. dir.) where the data of the quests lies
 
