@@ -1,0 +1,6 @@
+sl_version_req = 1.1.0:0;
+init_scene = dungeon;
+quest_name = Demo Quest;
+resolution = 1920x1080;
+font_size = 25;
+font_name = Ubuntu;

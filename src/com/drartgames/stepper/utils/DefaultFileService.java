@@ -20,7 +20,7 @@ public class DefaultFileService implements FileService {
 
         br.close();
 
-        return content;
+        return content != null ? content : "";
     }
 
     @Override

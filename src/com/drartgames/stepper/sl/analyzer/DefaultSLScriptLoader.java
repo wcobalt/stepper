@@ -62,6 +62,8 @@ public class DefaultSLScriptLoader implements SLScriptLoader {
                 ShowMotionOperatorProcessor.SHOW_MOTION_ID, ShowMotionOperatorProcessor.ARGS_COUNT));
         statementAnalyzers.add(new SingleStatementAnalyzer("animate",
                 AnimateOperatorProcessor.ANIMATE_ID, AnimateOperatorProcessor.ARGS_COUNT));
+        statementAnalyzers.add(new SingleStatementAnalyzer("stop_all",
+                StopAllOperatorProcessor.STOP_ALL_ID, StopAllOperatorProcessor.ARGS_COUNT));
     }
 
     @Override

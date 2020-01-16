@@ -19,7 +19,7 @@ public class Launcher {
             initializer.initialize(args);
             initializer.run();
         } catch (SLVersionMismatchException exc) {
-            logger.log(Level.SEVERE, "Unsupported SL SL_VERSION", exc);
+            logger.log(Level.SEVERE, "Unsupported SL version", exc);
         }
     }
 

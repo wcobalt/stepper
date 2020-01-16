@@ -1,0 +1,69 @@
+scene dungeon {
+    action init {
+        load_image "background" "dungeon/background.png"
+        load_image "background_opened" "dungeon/background_opened.png"
+        load_image "key" "dungeon/key.png"
+        load_audio "background" "dungeon/background.wav"
+        load_audio "got_key" "dungeon/got_key.wav"
+        load_audio "insert_key" "dungeon/insert_key.wav"
+        load_audio "open_door" "dungeon/open_door.wav"
+    }
+
+    action first_come {
+        play "background" loop
+
+        set_background "background"
+        set_text "Проснувшись, Вы поняли, что сидите на мокром каменном полу в полумраке глухого помещении, освещаемого лишь
+            тонким лучом солнечного света, спускающимся из отверстия в высоком потолоке. Обведя стены взглядом, Вы обнаружили
+            массивную деревенную дверь прямо напротив себя"ex
+
+        add_dialog "(оглядеться|осмотреться|(пошарить|поискать) (кругом|вокруг|что-нибудь))" "dial_look_around" dial_look_around on
+        add_dialog "((попробовать )?вставить ключ (в дверь)?|попробовать ключ)" "dial_insert_key" dial_insert_key on
+        add_dialog "((открыть|толкнуть) дверь)" "dial_open_door" dial_open_door on
+        add_dialog "(идти вперед|(пройти|уйти|выйти)( в дверь)?)" "dial_go_forward" dial_go_forward on
+    }
+
+    action dial_look_around {
+        play "got_key" once
+        show "С трудом, из-за царящего тут полумрака, Вы обыскали комнату и в одном из углов, на полу, обнаружили
+            поржавевший железный ключ" "key" none
+
+        tag "key"
+
+        switch_dialog "dial_look_around" off
+    }
+
+    action dial_insert_key {
+        if_tag "key" {
+            play "insert_key" once
+            set_text "С трудом повернув ржавый ключ в еще более ржавой замочной скважине, Вы почувстовали движение воздуха
+                - свобода близко!"
+
+            tag "inserted_key"
+
+            switch_dialog "dial_insert_key" off
+        } else
+            show "К сожалении, у Вас нет ключа. Вероятно, Вы останетесь здесь до конца жизни, который, кстати не так далёк." none none
+    }
+
+    action dial_open_door {
+        if_tag "inserted_key" {
+            tag "opened_door"
+            play "open_door" once
+            set_background "background_opened"
+            set_text "Толкнув дверь плечом Вы лишь оставили себе синяк. Но попробовав повторить движение несколько раз, Вы с удоволосьтвием
+                отметили, что дверь со скрипом начала двигаться. Через пять минут, Вы довольный и потный стояли перед залитым светом
+                дверным проёмом, ведущим на волю."
+            switch_dialog "dial_open_door" off
+        } else
+            show "Старая деревянная дверь с поржавевшей от окружающей сырости металлической обивкой, оказалась заперта" none none
+    }
+
+    action dial_go_forward {
+        if_tag "opened_door" {
+            goto end
+        } else
+            show "К сожалению, дверь закрыта. Видимо Вам придется просидеть остаток своей жизни в сырой темноте среди
+             кишащих тут и там крыс." none none
+    }
+}
