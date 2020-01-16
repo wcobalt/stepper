@@ -1,0 +1,11 @@
+Supported parameters:
+
+-h --help --- shows help
+-v --SL_VERSION --- shows version of Stepper
+-q --quest "<quest_name>" --- sets name of quest to be loaded
+-d --quests-dir "<quests_dir>" --- sets directory (relative to work. dir.) where the data of the quests lies
+
+For example: this command, runs quest "Lone Island" (all spaces are replaced with underscores and name is got in lower case) from folder "quests" relate to working directory:
+--quests-dir "quests" --quest "Lone island"
+
+--qeust-dir and --quest are mandatory parameters.
